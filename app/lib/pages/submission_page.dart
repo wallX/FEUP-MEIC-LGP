@@ -58,6 +58,14 @@ class _SubmissionPageState extends State<SubmissionPage>{
                 child: ElevatedButton(
                   onPressed: () {
                     // TODO: Connect to EVS API to submit videos
+                    final snackbar = SnackBar(
+                      content: const Text('Videos submitted successfully!'),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                    setState(() {
+                      _selectedFiles = [];
+                      _thumbnails = [];
+                    });
                   },
                   child: const Text('Submit Videos'),
                 ),
