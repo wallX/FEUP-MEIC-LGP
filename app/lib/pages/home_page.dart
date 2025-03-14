@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/submission_page.dart';
+import 'package:app/widgets/nav_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,8 +10,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +44,22 @@ class _HomePageState extends State<HomePage> {
             child: const Text('Submit Videos'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+      ),
+      body: const Center(
+        child: Text('This is the Profile Page'),
       ),
     );
   }
