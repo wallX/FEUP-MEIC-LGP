@@ -49,6 +49,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// TODO: Implement Profile Page - This is a placeholder
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
