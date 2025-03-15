@@ -1,3 +1,4 @@
+import 'package:app/manager/theme_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:app/widgets/nav_bar.dart';
 import 'package:app/pages/home_page.dart';
@@ -10,7 +11,7 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   int _selectedIndex = 0;
 
   static const List<Widget> _pages = <Widget>[
@@ -39,5 +40,25 @@ class _MainPageState extends State<MainPage> {
         ),
       )
     );
+  }
+
+  @override
+  void initState() {
+    themeManager.addListener(themeListener);
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    themeManager.removeListener(themeListener);
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  themeListener() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 }

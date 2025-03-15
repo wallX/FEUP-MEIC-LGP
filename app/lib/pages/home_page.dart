@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/submission_page.dart';
-import 'package:app/widgets/nav_bar.dart';
+import 'package:app/widgets/change_theme_button.dart';
+import 'package:app/manager/theme_manager.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,8 +14,14 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _buildUI(),
+    return AnimatedBuilder(
+      animation: themeManager,
+      builder: (context, child) {
+        return Scaffold(
+          backgroundColor: themeManager.theme.backgroundColor,
+          body: _buildUI(),
+        );
+      },
     );
   }
 
@@ -43,12 +50,15 @@ class _HomePageState extends State<HomePage> {
             },
             child: const Text('Submit Videos'),
           ),
+          // Change theme switch
+          const ChangeThemeButton(),
         ],
       ),
     );
   }
 }
 
+// TODO: Implement Profile Page - This is a placeholder
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
