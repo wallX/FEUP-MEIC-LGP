@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:app/widgets/video/video_thumbnail.dart';
+import 'package:app/manager/theme_manager.dart';
 
 
 class SubmissionPage extends StatefulWidget {
@@ -18,17 +19,24 @@ class _SubmissionPageState extends State<SubmissionPage>{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _buildUI(),
-      floatingActionButton: _selectVideoFromGalleryButton(),
+    return AnimatedBuilder(
+      animation: themeManager,
+      builder: (context, child) {
+        return Scaffold(
+          backgroundColor: themeManager.theme.backgroundColor,
+          body: _buildUI(),
+          floatingActionButton: _selectVideoFromGalleryButton(),
+        );
+      },
     );
   }
 
   Widget _buildUI() {
     return Container(
       child: _selectedFiles.isEmpty
-        ? const Center(
-            child: Text('No video selected'),
+        ? Center(
+            child: Text('No video selected', style: TextStyle(color: themeManager.theme.textColor)),
+
           )
 
         : Column(
@@ -38,8 +46,8 @@ class _SubmissionPageState extends State<SubmissionPage>{
                   itemCount: _selectedFiles.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      title: Text('File ${index + 1}'),
-                      subtitle: Text(_selectedFiles[index].path),
+                      title: Text('File ${index + 1}', style: TextStyle(color: themeManager.theme.textColor)),
+                      subtitle: Text(_selectedFiles[index].path, style: TextStyle(color: themeManager.theme.textColor)),
                       leading: _thumbnails[index],
                       trailing: IconButton(
                           onPressed: () {
