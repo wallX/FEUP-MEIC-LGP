@@ -1,25 +1,25 @@
-use std::collections::HashMap;
-use std::path::Path;
-use actix_web::{web, HttpRequest, HttpResponse};
-use crate::config::get_config;
-use crate::models::UploadRequest;
 use crate::utils::Singleton;
+use actix_web::{web, HttpRequest, HttpResponse};
+use serde_json::Value;
+use std::path::Path;
+use base64::{engine::general_purpose, Engine as _};
+use crate::config::config::get_config;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/uploads")
-            .route(web::post().to(initiate_upload))
-            .route(web::get().to(upload_hook)),
-    );
+            .route(web::post().to(initiate_upload)),
+    )
+        .service(
+            web::resource("/uploads/hook")
+                .route(web::post().to(upload_ready_hook)),
+        );
 }
 
 
 async fn initiate_upload(req: HttpRequest, singleton: web::Data<Singleton>) -> HttpResponse {
     let client = &singleton.client;
-
-    /*let config = get_config().lock().unwrap();
-    println!("Tusd URL: {}", config.tusd.url);
-    println!("Upload Path: {}", config.tusd.upload_path);*/
+    let config = get_config().lock().unwrap();
 
     // Extract headers
     let file_name = match req.headers().get("file_name") {
@@ -42,13 +42,13 @@ async fn initiate_upload(req: HttpRequest, singleton: web::Data<Singleton>) -> H
 
     let metadata = format!(
         "filename {},extension {},username {}",
-        base64::encode(file_name.clone()),
-        base64::encode(file_extension.clone()),
-        base64::encode(user)
+        general_purpose::STANDARD.encode(file_name.clone()),
+        general_purpose::STANDARD.encode(file_extension),
+        general_purpose::STANDARD.encode(user)
     );
 
     match client
-        .post("http://localhost:1080/files")
+        .post(&config.tusd.url)
         .header("Upload-Length", file_length.to_string())
         .header("Tus-Resumable", "1.0.0")
         .header("Upload-Metadata", metadata) // Add metadata
@@ -73,6 +73,41 @@ async fn initiate_upload(req: HttpRequest, singleton: web::Data<Singleton>) -> H
     }
 }
 
-async fn upload_hook() -> HttpResponse {
-    HttpResponse::Ok().json("Upload status: Pending")
+async fn upload_ready_hook(body: web::Json<Value>) -> HttpResponse {
+    let json_data = body.into_inner();
+
+    // Navigate through the JSON structure safely
+    let id = json_data.get("Event")
+        .and_then(|e| e.get("Upload"))
+        .and_then(|u| u.get("ID"))
+        .and_then(|id| id.as_str())
+        .unwrap_or("Unknown ID");
+
+    let filename = json_data.get("Event")
+        .and_then(|e| e.get("Upload"))
+        .and_then(|u| u.get("MetaData"))
+        .and_then(|md| md.get("filename"))
+        .and_then(|fnm| fnm.as_str())
+        .unwrap_or("Unknown filename");
+
+    let username = json_data.get("Event")
+        .and_then(|e| e.get("Upload"))
+        .and_then(|u| u.get("MetaData"))
+        .and_then(|md| md.get("username"))
+        .and_then(|usr| usr.as_str())
+        .unwrap_or("Unknown username");
+
+    println!("Upload ID: {}", id);
+    println!("Upload Name: {}", filename);
+    println!("Upload Username: {}", username);
+
+    // Return extracted values as JSON response
+    HttpResponse::Ok().json(serde_json::json!({
+        "ID": id,
+        "filename": filename,
+        "username": username
+    }))
+
+
+
 }

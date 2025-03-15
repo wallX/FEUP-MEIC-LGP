@@ -1,6 +1,6 @@
+use crate::utils::Singleton;
 use actix_web::{web, App, HttpServer};
 use reqwest::Client;
-use crate::utils::Singleton;
 
 mod api;
 mod models;
@@ -13,6 +13,8 @@ mod config;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let client = Client::new();
+
+
 
     let singleton = web::Data::new(Singleton { client });
     HttpServer::new(move || {

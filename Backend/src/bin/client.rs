@@ -8,11 +8,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
 
     // Step 1: Initiate the upload
-    let file_path = "RustRover-2024.3.7-aarch64.dmg";
+    let file_path = "docker-compose.yaml";
     let file_size = std::fs::metadata(file_path)?.len();
     let file_name = Path::new(file_path).file_name().unwrap().to_str().unwrap();
 
-    //return Ok(());
+    println!("File size: {}", file_size);
 
     let response = client
         .post("http://localhost:8080/uploads")

@@ -7,7 +7,6 @@ use std::sync::Mutex;
 #[derive(Debug, Deserialize)]
 pub struct TusdConfig {
     pub url: String,
-    pub upload_path: String,
 }
 
 #[derive(Debug, Deserialize)]
