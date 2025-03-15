@@ -73,7 +73,7 @@ async fn initiate_upload(req: HttpRequest, singleton: web::Data<Singleton>) -> H
     }
 }
 
-async fn upload_ready_hook(body: web::Json<Value>) -> HttpResponse {
+async fn upload_ready_hook(body: web::Json<Value>, singleton: web::Data<Singleton>) -> HttpResponse {
     let json_data = body.into_inner();
 
     // Navigate through the JSON structure safely
@@ -97,9 +97,11 @@ async fn upload_ready_hook(body: web::Json<Value>) -> HttpResponse {
         .and_then(|usr| usr.as_str())
         .unwrap_or("Unknown username");
 
-    println!("Upload ID: {}", id);
-    println!("Upload Name: {}", filename);
-    println!("Upload Username: {}", username);
+    //println!("Upload ID: {}", id);
+    //println!("Upload Name: {}", filename);
+    //println!("Upload Username: {}", username);
+
+    singleton.queue.add_file(id.to_string());
 
     // Return extracted values as JSON response
     HttpResponse::Ok().json(serde_json::json!({
@@ -107,7 +109,5 @@ async fn upload_ready_hook(body: web::Json<Value>) -> HttpResponse {
         "filename": filename,
         "username": username
     }))
-
-
 
 }
