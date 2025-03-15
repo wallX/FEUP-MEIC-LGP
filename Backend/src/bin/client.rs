@@ -1,0 +1,68 @@
+use reqwest::Client;
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+
+    // Step 1: Initiate the upload
+    let file_path = "RustRover-2024.3.7-aarch64.dmg";
+    let file_size = std::fs::metadata(file_path)?.len();
+    let file_name = Path::new(file_path).file_name().unwrap().to_str().unwrap();
+
+    //return Ok(());
+
+    let response = client
+        .post("http://localhost:8080/uploads")
+        .header("file_name", file_name)
+        .header("file_length", file_size.to_string())
+        .send()
+        .await?;
+
+
+    let upload_url = response
+        .headers()
+        .get("Location")
+       .ok_or("No Location header found")?
+        .to_str()?;
+
+    println!("Upload URL: {}", upload_url);
+
+
+
+    // Step 2: Upload the file in chunks
+    let mut file = File::open(file_path)?;
+    let chunk_size = 1024 * 1024; // 1 MB
+    let mut buffer = vec![0; chunk_size];
+    let mut offset = 0;
+
+    loop {
+        let bytes_read = file.read(&mut buffer)?;
+        if bytes_read == 0 {
+            break; // End of file
+        }
+
+        let chunk = &buffer[..bytes_read];
+
+        let response = client
+            .patch(upload_url)
+            .header("Content-Type", "application/offset+octet-stream")
+            .header("Upload-Offset", offset.to_string())
+            .header("Tus-Resumable", "1.0.0")
+            .body(chunk.to_vec())
+            .send()
+            .await?;
+
+        offset += bytes_read as u64;
+        println!("Uploaded {} bytes", offset);
+
+        if !response.status().is_success() {
+            return Err(format!("Upload failed: {}", response.status()).into());
+        }
+    }
+
+    println!("Upload complete!");
+    Ok(())
+}

@@ -1,0 +1,6 @@
+/target
+/Backend/.idea/
+/Backend/Cargo.lock
+/Backend/target/
+/.idea/
+/Backend/uploads/
