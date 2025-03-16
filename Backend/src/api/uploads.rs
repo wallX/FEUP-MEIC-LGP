@@ -20,7 +20,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 async fn initiate_upload(req: HttpRequest, singleton: web::Data<Singleton>) -> HttpResponse {
     let client = &singleton.client;
     let config = get_config().lock().unwrap();
-    println!("{}", config.tusd.url);
+
     // Extract headers
     let file_name = match req.headers().get("file_name") {
         Some(value) => value.to_str().unwrap_or("").to_string(),
@@ -62,7 +62,13 @@ async fn initiate_upload(req: HttpRequest, singleton: web::Data<Singleton>) -> H
             //        .to_string())).collect();
             let mut http_response_builder = HttpResponse::Ok();
             for (key, value) in response.headers().iter() {
-                http_response_builder.append_header((key.as_str(), value.to_str().unwrap()));
+                if key.as_str() == "location" {
+                    let location_value = value.to_str().unwrap().replace(config.tusd.internal_host.as_str(), config.tusd.external_host.as_str());
+                    http_response_builder.append_header(("location", location_value));
+                } else {
+                    // Copy other headers as-is
+                    http_response_builder.append_header((key.as_str(), value.to_str().unwrap()));
+                }
             }
             http_response_builder.finish()
         } else {
