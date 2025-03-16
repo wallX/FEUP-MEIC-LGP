@@ -1,3 +1,7 @@
 tusd:
-  url: "http://tusd:8080/files"
-  upload_path: "./uploads"
+  protocol: "http"
+  internal_name: "tusd" #inside docker network
+  internal_port: "1080"
+  external_name: "localhost" #outside host
+  external_port: "1080"
+  endpoint: "files"

@@ -14,10 +14,11 @@ services:
   tusd:
     image: tusproject/tusd
     ports:
-      - "1080:8080"
+      - "1080:1080"
     volumes:
       - ./uploads:/srv/tusd-data/data
     command: [
+      "-port", "1080",
       "-hooks-http",
       "http://app:8080/uploads/hook",
       "-hooks-enabled-events=post-finish",
