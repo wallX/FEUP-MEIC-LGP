@@ -20,7 +20,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 async fn initiate_upload(req: HttpRequest, singleton: web::Data<Singleton>) -> HttpResponse {
     let client = &singleton.client;
     let config = get_config().lock().unwrap();
-
+    println!("{}", config.tusd.url);
     // Extract headers
     let file_name = match req.headers().get("file_name") {
         Some(value) => value.to_str().unwrap_or("").to_string(),

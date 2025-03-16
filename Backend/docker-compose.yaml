@@ -7,6 +7,10 @@ services:
       - tusd-network
     depends_on:
       - tusd
+    volumes:
+      - .:/app  # Mount the current directory for development
+    environment:
+      - RUST_LOG=info  # Example environment variable for Rust logging
   tusd:
     image: tusproject/tusd
     ports:
@@ -15,12 +19,13 @@ services:
       - ./uploads:/srv/tusd-data/data
     command: [
       "-hooks-http",
-      "http://host.docker.internal:8080/uploads/hook",
+      "http://app:8080/uploads/hook",
       "-hooks-enabled-events=post-finish",
       "-hooks-http-retry",
       "5"
     ]
     #http://app:8080/uploads/hook
+    #"http://host.docker.internal:8080/uploads/hook",
     networks:
       - tusd-network
     extra_hosts:
