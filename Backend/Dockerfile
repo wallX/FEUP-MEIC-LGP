@@ -10,4 +10,4 @@ WORKDIR /app
 RUN cargo install cargo-watch
 
 # Default command: Run `cargo run` when the container starts
-CMD ["cargo", "watch", "-x", "run", "--ignore", "uploads/*"]
+CMD ["cargo", "watch", "-x", "run", "--ignore", "/app/uploads/*","--ignore", "**/{uploads}/**", "--why"]
