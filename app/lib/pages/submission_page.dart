@@ -11,7 +11,6 @@ import 'package:http/http.dart' as http;
 import 'package:app/data/custom_file.dart';
 
 import 'package:app/widgets/submission_page/file_list.dart';
-import 'package:app/widgets/submission_page/upload_progress.dart';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
