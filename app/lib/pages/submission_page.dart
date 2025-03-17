@@ -88,7 +88,6 @@ class _SubmissionPageState extends State<SubmissionPage> {
     }
   }
     
-
   Widget _listSelectedVideos() {
     return ListView.builder(
       itemCount: _selectedFiles.length,
@@ -212,7 +211,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
   Future<void> _uploadToTus() async {
     final tempDir = await getTemporaryDirectory();
     
-    //List<Future> uploads = [];
+    List<Future> uploads = [];
     
     for (int i = 0; i < _selectedFiles.length; i++) {
       CustomFile uploadFile = _selectedFiles[i];
@@ -246,7 +245,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
       // therefore it will send a PATCH request instead of a POST
       await tusClient.cache?.set(tusClient.fingerprint, uri);
 
-      tusClient.startUpload(
+      uploads.add(tusClient.startUpload(
         onProgress: (count, total, response) {
           setState(() {
             uploadFile.progress = count / total * 100;
@@ -264,11 +263,12 @@ class _SubmissionPageState extends State<SubmissionPage> {
         onTimeout: () {
           debugPrint('DEBUG | Timeout uploading ${uploadFile.file.name}');
         }
-      );
+      ));
+
     }
     
     // Wait for all uploads to complete
-    //await Future.wait(uploads);
+    await Future.wait(uploads);
   }
   
   String _printDuration(Duration duration) {
