@@ -8,7 +8,6 @@ import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:tusc/tusc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:app/data/custom_file.dart';
 
 class SubmissionPage extends StatefulWidget {
@@ -57,32 +56,38 @@ class _SubmissionPageState extends State<SubmissionPage> {
     );
   }
 
+
+  // Widget to select a video from the gallery
   Widget _selectVideoFromGalleryButton() {
     return FloatingActionButton(
-      onPressed: _isUploading ? null : () async {
-        FilePickerResult? mediaFiles = await FilePicker.platform.pickFiles(
-          allowMultiple: true,
-          type: FileType.video,
-        );
-        if (mediaFiles != null) {
-          List<File> files = mediaFiles.paths.map((path) => File(path!)).toList();
-          setState(() {
-            _selectedFiles = files.map((file) => CustomFile(
-              name: file.path.split('/').last,
-              size: file.lengthSync(),
-              file: XFile(file.path),
-              thumbnail: VideoThumbnail(videoPath: file.path),
-              progress: 0,
-              estimate: Duration.zero,
-              
-            )).toList();
-          });
-        }
-      },
+      onPressed: _isUploading ? null : _selectVideoFromGallery,
       tooltip: 'Select video from gallery',
       child: const Icon(Icons.video_library),
     );
   }
+
+  // Function to select a video from the gallery
+  Future<void> _selectVideoFromGallery() async {
+    FilePickerResult? mediaFiles = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.video,
+    );
+    if (mediaFiles != null) {
+      List<File> files = mediaFiles.paths.map((path) => File(path!)).toList();
+      setState(() {
+        _selectedFiles = files.map((file) => CustomFile(
+          name: file.path.split('/').last,
+          size: file.lengthSync(),
+          file: XFile(file.path),
+          thumbnail: VideoThumbnail(videoPath: file.path),
+          progress: 0,
+          estimate: Duration.zero,
+          
+        )).toList();
+      });
+    }
+  }
+    
 
   Widget _listSelectedVideos() {
     return ListView.builder(
@@ -157,10 +162,10 @@ class _SubmissionPageState extends State<SubmissionPage> {
               ScaffoldMessenger.of(context).showSnackBar(snackbar);
               
               // Remove uploaded videos
-              //setState(() {
-              //  _selectedFiles = [];
-              //  _isUploading = false;
-              //});
+              setState(() {
+                _selectedFiles = [];
+                _isUploading = false;
+              });
             },
       child: _isUploading 
           ? Row(
@@ -184,8 +189,6 @@ class _SubmissionPageState extends State<SubmissionPage> {
 
   Future<String?> _getUploadUrl(String fileName, int fileLength) async {
     try {
-      debugPrint('DEBUG | Getting upload URL for $fileName with length $fileLength');
-
       final response = await httpClient.post(
         Uri.parse("http://10.0.2.2:8080/uploads"),
         headers: <String, String>{
@@ -199,15 +202,14 @@ class _SubmissionPageState extends State<SubmissionPage> {
         final responseData = response.headers['location'];
         return responseData;
       } else {
-        throw Exception('DEBUG | Failed to get upload URL: ${response.statusCode}');
+        throw Exception('Failed to get upload URL: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('DEBUG | Error connecting to server: $e');
+      throw Exception('Error connecting to server: $e');
     }
   }
 
   Future<void> _uploadToTus() async {
-    debugPrint('DEBUG | Uploading videos to Tus server');
     final tempDir = await getTemporaryDirectory();
     
     //List<Future> uploads = [];
@@ -220,14 +222,9 @@ class _SubmissionPageState extends State<SubmissionPage> {
       try {
         uri = await _getUploadUrl(uploadFile.name, uploadFile.size);
         uri = uri?.replaceAll("localhost", "10.0.2.2"); // TODO: Fix this for production
-        debugPrint('DEBUG | Got upload URL: $uri');
       } catch (e) {
-        debugPrint('DEBUG | Error getting upload URL: $e');
         return;
       }
-
-      Uri sendUri = Uri.parse(uri!);
-      debugPrint("DEBUG | Sending to $sendUri");
 
       // Create a temporary directory for this file
       final tempDirectory = Directory('${tempDir.path}/${uploadFile.file.name}_upload');
@@ -236,7 +233,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
       }
       
       final tusClient = TusClient(
-        url: uri, 
+        url: uri!, 
         file: uploadFile.file,
         chunkSize: 1.MB,
         timeout: Duration(seconds: 30),
@@ -251,13 +248,11 @@ class _SubmissionPageState extends State<SubmissionPage> {
 
       tusClient.startUpload(
         onProgress: (count, total, response) {
-          debugPrint('DEBUG | Progress: $count / $total');
           setState(() {
             uploadFile.progress = count / total * 100;
           });
         },
         onComplete: (response) {
-          debugPrint('DEBUG | Upload complete: $response');
           setState(() {
             uploadFile.progress = 100;
           });
@@ -283,9 +278,9 @@ class _SubmissionPageState extends State<SubmissionPage> {
     return '$twoDigitMinutes:$twoDigitSeconds';
   }
 
-  // Close the client when the page is disposed
   @override
   void dispose() {
+    // Close the client when the page is disposed
     httpClient.close();
     super.dispose();
   }
