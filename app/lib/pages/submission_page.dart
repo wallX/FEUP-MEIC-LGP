@@ -235,21 +235,19 @@ class _SubmissionPageState extends State<SubmissionPage> {
         tempDirectory.createSync(recursive: true);
       }
       
-      // Create a client for this file
-      //final client = TusClient(
-      //  uploadFile.file,
-      //  store: TusFileStore(tempDirectory),
-      //  maxChunkSize: 1024 * 1024, // 1MB
-      //  retries: 5,
-      //  retryInterval: 2
-      //);
       final tusClient = TusClient(
         url: uri, 
         file: uploadFile.file,
         chunkSize: 1.MB,
         timeout: Duration(seconds: 30),
-        cache: TusPersistentCache(tempDirectory.path)
+        cache: TusPersistentCache(tempDirectory.path),
+        httpClient: httpClient,
       );
+
+      // Since the way the package works it always sends a POST first and our server doesn't support that, 
+      // we need set the upload URL in the cache before calling startUpload so that the package thinks it's resuming an upload,
+      // therefore it will send a PATCH request instead of a POST
+      await tusClient.cache?.set(tusClient.fingerprint, uri);
 
       tusClient.startUpload(
         onProgress: (count, total, response) {
@@ -272,45 +270,6 @@ class _SubmissionPageState extends State<SubmissionPage> {
           debugPrint('DEBUG | Timeout uploading ${uploadFile.file.name}');
         }
       );
-      
-      //setState(() {
-      //  uploadFile.client = client;
-      //});
-      
-      // Start the upload for this file
-      /*final uploadFuture = client.upload(
-
-        onStart: (TusClient client, Duration? estimation) {
-          if (estimation != null) {
-            setState(() {
-              uploadFile.estimate = estimation;
-            });
-          }
-        },
-
-        onComplete: () {
-          setState(() {
-            uploadFile.progress = 100;
-          });
-          tempDirectory.deleteSync(recursive: true);
-        },
-
-        onProgress: (progress, estimate) {
-          setState(() {
-            uploadFile.progress = progress;
-            uploadFile.estimate = estimate;
-          });
-        },
-
-        uri: sendUri,
-        measureUploadSpeed: true,
-
-      ).catchError((error) {
-        debugPrint('DEBUG | Error uploading ${uploadFile.file.name}: $error');
-      });
-      
-      uploads.add(uploadFuture);
-      */
     }
     
     // Wait for all uploads to complete
