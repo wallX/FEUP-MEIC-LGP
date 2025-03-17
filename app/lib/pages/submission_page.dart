@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'package:app/widgets/video/video_thumbnail.dart';
+import 'package:app/widgets/submission_page/video/video_thumbnail.dart';
 import 'package:app/manager/theme_manager.dart';
 
 import 'package:cross_file/cross_file.dart' show XFile;
@@ -9,6 +9,9 @@ import 'package:tusc/tusc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:app/data/custom_file.dart';
+
+import 'package:app/widgets/submission_page/file_list.dart';
+import 'package:app/widgets/submission_page/upload_progress.dart';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
@@ -42,10 +45,18 @@ class _SubmissionPageState extends State<SubmissionPage> {
               child: Text('No video selected', style: TextStyle(color: themeManager.theme.textColor)),
             )
 
-          : Column( // Videos selected
+          : Column(
               children: [
                 Expanded(
-                  child: _listSelectedVideos(),
+                  child: FileList(
+                    files: _selectedFiles,
+                    isUploading: _isUploading,
+                    onRemove: _isUploading ? null : (index) {
+                      setState(() {
+                        _selectedFiles.removeAt(index);
+                      });
+                    },
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -87,65 +98,11 @@ class _SubmissionPageState extends State<SubmissionPage> {
       });
     }
   }
-    
-  Widget _listSelectedVideos() {
-    return ListView.builder(
-      itemCount: _selectedFiles.length,
-      itemBuilder: (context, index) {
-        final uploadFile = _selectedFiles.length > index ? _selectedFiles[index] : null;
-        
-        return Column(
-          children: [
-            ListTile(
-              title: Text('File ${index + 1}'),
-              subtitle: Text('${_selectedFiles[index].name} - ${_selectedFiles[index].size} bytes',
-                style: TextStyle(color: themeManager.theme.textColor)),
-              leading: _selectedFiles[index].thumbnail,
-              trailing: _isUploading 
-                ? null 
-                : IconButton(
-                    onPressed: () {
-                      setState(() {
-                        if (_selectedFiles.length > index) {
-                          _selectedFiles.removeAt(index);
-                        }
-                      });
-                    },
-                    icon: const Icon(Icons.close)
-                  ),
-            ),
-            if (uploadFile != null && _isUploading)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    LinearProgressIndicator(value: uploadFile.progress / 100),
-                    SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('${uploadFile.progress.toStringAsFixed(1)}%', 
-                          style: TextStyle(color: themeManager.theme.textColor)),
-                        Text('Est: ${_printDuration(uploadFile.estimate)}',
-                          style: TextStyle(color: themeManager.theme.textColor)),
-                      ],
-                    ),
-                    if (uploadFile.fileUrl != null)
-                      Text('Uploaded: ${uploadFile.fileUrl}',
-                        style: TextStyle(color: Colors.green)),
-                  ],
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
 
   Widget _submitButton() {
     return ElevatedButton(
-      onPressed: _selectedFiles.isEmpty || _isUploading 
+
+      onPressed: _isUploading 
           ? null 
           : () async {
               setState(() {
@@ -166,6 +123,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
                 _isUploading = false;
               });
             },
+
       child: _isUploading 
           ? Row(
               mainAxisSize: MainAxisSize.min,
@@ -251,15 +209,18 @@ class _SubmissionPageState extends State<SubmissionPage> {
             uploadFile.progress = count / total * 100;
           });
         },
+
         onComplete: (response) {
           setState(() {
             uploadFile.progress = 100;
           });
           tempDirectory.deleteSync(recursive: true);
         },
+
         onError: (error) {
           debugPrint('DEBUG | Error uploading ${uploadFile.file.name}: $error');
         },
+
         onTimeout: () {
           debugPrint('DEBUG | Timeout uploading ${uploadFile.file.name}');
         }
@@ -269,13 +230,6 @@ class _SubmissionPageState extends State<SubmissionPage> {
     
     // Wait for all uploads to complete
     await Future.wait(uploads);
-  }
-  
-  String _printDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    final twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return '$twoDigitMinutes:$twoDigitSeconds';
   }
 
   @override

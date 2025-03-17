@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:app/widgets/video/video_player_page.dart';
+import 'package:app/widgets/submission_page/video/video_player_page.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoThumbnail extends StatefulWidget {
