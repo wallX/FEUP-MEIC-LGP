@@ -105,23 +105,34 @@ class _SubmissionPageState extends State<SubmissionPage> {
       onPressed: _isUploading 
           ? null 
           : () async {
+
               setState(() {
                 _isUploading = true;
               });
+
+              try {
+                await _uploadToTus();
               
-              await _uploadToTus();
+                // Visual feedback
+                final snackbar = SnackBar(
+                  content: const Text('Videos submitted successfully!'),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                
+                // Remove uploaded videos
+                setState(() {
+                  _selectedFiles = [];
+                });
+              } catch (e) {
+                if (mounted) {
+                  _showErrorDialog(e.toString());
+                }
+              } finally {
+                setState(() {
+                  _isUploading = false;
+                });
+              }
               
-              // Visual feedback
-              final snackbar = SnackBar(
-                content: const Text('Videos submitted successfully!'),
-              );
-              ScaffoldMessenger.of(context).showSnackBar(snackbar);
-              
-              // Remove uploaded videos
-              setState(() {
-                _selectedFiles = [];
-                _isUploading = false;
-              });
             },
 
       child: _isUploading 
@@ -159,7 +170,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
         final responseData = response.headers['location'];
         return responseData;
       } else {
-        throw Exception('Failed to get upload URL: ${response.statusCode}');
+        throw Exception('${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       throw Exception('Error connecting to server: $e');
@@ -180,7 +191,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
         uri = await _getUploadUrl(uploadFile.name, uploadFile.size);
         uri = uri?.replaceAll("localhost", "10.0.2.2"); // TODO: Fix this for production
       } catch (e) {
-        return;
+        throw Exception('Error getting upload URL: $e');
       }
 
       // Create a temporary directory for this file
@@ -218,11 +229,11 @@ class _SubmissionPageState extends State<SubmissionPage> {
         },
 
         onError: (error) {
-          debugPrint('DEBUG | Error uploading ${uploadFile.file.name}: $error');
+          throw Exception('Error uploading ${uploadFile.file.name}: $error');
         },
 
         onTimeout: () {
-          debugPrint('DEBUG | Timeout uploading ${uploadFile.file.name}');
+          throw Exception('Timeout uploading ${uploadFile.file.name}');
         }
       ));
 
@@ -230,6 +241,36 @@ class _SubmissionPageState extends State<SubmissionPage> {
     
     // Wait for all uploads to complete
     await Future.wait(uploads);
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Upload Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+          backgroundColor: themeManager.theme.backgroundColor,
+          titleTextStyle: TextStyle(
+            color: themeManager.theme.textColor,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+          contentTextStyle: TextStyle(
+            color: themeManager.theme.textColor,
+            fontSize: 16,
+          ),
+        );
+      },
+    );
   }
 
   @override
