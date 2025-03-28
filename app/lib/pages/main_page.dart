@@ -1,4 +1,5 @@
 import 'package:app/manager/theme_manager.dart';
+import 'package:app/pages/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:app/widgets/nav_bar.dart';
 import 'package:app/pages/home_page.dart';
@@ -16,7 +17,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
 
   static const List<Widget> _pages = <Widget>[
     HomePage(),
-    ProfilePage(),
+    RegisterPage(),
   ];
 
   void _onItemTapped(int index) {
