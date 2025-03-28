@@ -21,6 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
         name: _nameController.text,
         email: _emailController.text,
         userType: _selectedUserType,
+        token: 'example_token',
         stations: _stationsController.text.isNotEmpty
             ? _stationsController.text.split(',')
             : null,
@@ -105,4 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
+
+
 }
+
