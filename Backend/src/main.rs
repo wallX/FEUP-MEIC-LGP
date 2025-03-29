@@ -1,12 +1,14 @@
-mod api;
-mod models;
+mod model;
 mod services;
 mod utils;
 mod config;
+mod interface;
+mod controller;
 
 use crate::utils::Singleton;
 use actix_web::{web, App, HttpServer};
 use reqwest::Client;
+use interface::api;
 use services::pipeline_queue::PipelineQueue;
 use services::worker;
 
