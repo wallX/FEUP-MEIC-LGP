@@ -1,7 +1,9 @@
 tusd:
   protocol: "http"
   internal_name: "tusd" #inside docker network
+  #internal_name: "localhost" #inside docker network
   internal_port: "1080"
-  external_name: "localhost" #outside host
-  external_port: "1080"
+  external_name: "localhost" #outside connection hostname
+  external_port:
+  external_endpoint: "upload"
   endpoint: "files"
