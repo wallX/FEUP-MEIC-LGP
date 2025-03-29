@@ -157,7 +157,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
   Future<String?> _getUploadUrl(String fileName, int fileLength) async {
     try {
       final response = await httpClient.post(
-        Uri.parse("http://10.0.2.2:8080/uploads"),
+        Uri.parse("http://10.0.2.2/api/uploads"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'file_name': fileName,
@@ -165,7 +165,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
         }
       );
     
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         final responseData = response.headers['location'];
         return responseData;
       } else {
