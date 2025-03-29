@@ -44,6 +44,7 @@ services:
       networks:
         - tusd-network
   llamacpp-server:
+    #https://github.com/ggml-org/llama.cpp/tree/master/examples/server
     image: ghcr.io/ggml-org/llama.cpp:server
     ports:
       - "8081:8080"
