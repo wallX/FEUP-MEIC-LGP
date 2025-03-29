@@ -1,8 +1,6 @@
 services:
   app:
     build: .
-    ports:
-      - "8080:8080"
     networks:
       - tusd-network
     depends_on:
@@ -13,17 +11,17 @@ services:
       - RUST_LOG=info  # Example environment variable for Rust logging
   tusd:
     image: tusproject/tusd
-    ports:
-      - "1080:1080"
     volumes:
       - ./uploads:/srv/tusd-data/data
     command: [
       "-port", "1080",
+      #"-base-path", "/upload",
       "-hooks-http",
-      "http://app:8080/uploads/hook",
+      "http://app:8080/api/uploads/hook",
       "-hooks-enabled-events=post-finish",
       "-hooks-http-retry",
-      "5"
+      "5",
+      "-behind-proxy"
     ]
     #http://app:8080/uploads/hook
     #"http://host.docker.internal:8080/uploads/hook",
@@ -31,6 +29,21 @@ services:
       - tusd-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # Optional nginx service if you want to run it in the same compose file
+  nginx:
+      image: nginx:alpine
+      ports:
+        - "80:80"
+        - "443:443"
+      volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf
+       # - ./certs:/etc/nginx/certs  # For SSL certificates
+      depends_on:
+        - app
+        - tusd
+      networks:
+        - tusd-network
+
 networks:
   tusd-network:
     driver: bridge

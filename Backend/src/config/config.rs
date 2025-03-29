@@ -9,8 +9,11 @@ pub struct TusdConfig {
     pub protocol: String,
     pub internal_name: String,
     pub internal_port: String,
+
     pub external_name: String,
-    pub external_port: String,
+    pub external_port: Option<String>,
+    pub external_endpoint: Option<String>,
+
     pub endpoint: String,
     #[serde(skip_deserializing)]  // Skip deserialization for this field
     pub url: String,
@@ -29,10 +32,28 @@ impl TusdConfig {
             "{}://{}:{}/{}",
             self.protocol, self.internal_name, self.internal_port, self.endpoint
         );
-        self.external_host = format!(
-            "{}:{}",
-            self.external_name, self.external_port
-        );
+        self.external_host = if self.external_port.is_some() && self.external_endpoint.is_some() {
+            format!(
+                "{}:{}/{}",
+                self.external_name,
+                self.external_port.as_ref().unwrap(),  // Borrow instead of move
+                self.external_endpoint.as_ref().unwrap().trim_matches('/')
+            )
+        } else if self.external_port.is_some() {
+            format!(
+                "{}:{}",
+                self.external_name,
+                self.external_port.as_ref().unwrap()  // Borrow instead of move
+            )
+        } else if self.external_endpoint.is_some() {
+            format!(
+                "{}/{}",
+                self.external_name,
+                self.external_endpoint.as_ref().unwrap().trim_matches('/')  // Borrow instead of move
+            )
+        } else {
+            self.external_name.clone()
+        };
         self.internal_host = format!(
             "{}:{}",
             self.internal_name, self.internal_port

@@ -7,7 +7,7 @@ use crate::interface::api::tus_client::TusClient;
 use crate::model::api::uploads::{NativeResponse, UploadRequest};
 
 pub async fn initiate_upload_logic(req: UploadRequest, singleton: &Singleton) -> Result<NativeResponse, String> {
-    let config = get_config().lock().unwrap();
+    let config = &get_config().lock().unwrap();
 
     let file_name = req.file_name.clone();
     let file_length = req.file_length.clone();

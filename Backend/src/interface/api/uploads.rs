@@ -8,7 +8,8 @@ use serde_json::Value;
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/uploads")
-            .route(web::post().to(initiate_upload)),
+            .route(web::post().to(initiate_upload))
+            .route(web::get().to(get_uploads)),
     )
         .service(
             web::resource("/uploads/hook")
@@ -20,8 +21,9 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 async fn initiate_upload(req: HttpRequest, singleton: web::Data<Singleton>) -> HttpResponse {
     let upload_request = match UploadRequest::from_headers(req) {
         Ok(request) => request,
-        Err(error_response) => return error_response,
+        Err(error_response) => return error_response
     };
+
     match controller::api::uploads::initiate_upload_logic(upload_request, &singleton).await {
         Ok(response) => {
             let mut http_response_builder = HttpResponse::build(
@@ -60,6 +62,11 @@ impl UploadRequest {
 
         Ok(Self { file_name, file_length })
     }
+}
+
+async fn get_uploads(singleton: web::Data<Singleton>) -> HttpResponse {
+    println!("Getting uploaded files");
+    HttpResponse::Ok().json("Service is up and running")
 }
 
 
