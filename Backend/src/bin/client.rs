@@ -16,6 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let response = client
         .post("http://localhost/api/uploads")
+        //.post("http://localhost:8080/uploads")
         .header("file_name", file_name)
         .header("file_length", file_size.to_string())
         .send()

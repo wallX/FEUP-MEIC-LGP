@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use crate::utils::Singleton;
 use crate::{controller};
 use crate::model::api::uploads::UploadRequest;
@@ -18,7 +19,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 }
 
 
-async fn initiate_upload(req: HttpRequest, singleton: web::Data<Singleton>) -> HttpResponse {
+async fn initiate_upload(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
     let upload_request = match UploadRequest::from_headers(req) {
         Ok(request) => request,
         Err(error_response) => return error_response

@@ -7,3 +7,10 @@ tusd:
   external_port:
   external_endpoint: "upload"
   endpoint: "files"
+redis:
+  protocol: "redis"
+  username:
+  password:
+  host: "localhost"
+  port: "6379"
+  db: 0

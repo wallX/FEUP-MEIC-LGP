@@ -1,7 +1,7 @@
 use config::Config;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Deserializer};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 
 #[derive(Debug, Deserialize)]
@@ -23,6 +23,18 @@ pub struct TusdConfig {
 
     #[serde(skip_deserializing)]  // Skip deserialization for this field
     pub external_host: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RedisConfig {
+    pub protocol: String,
+    pub username: Option<String>,
+    pub password: Option<String>,
+    pub host: String,
+    pub port: Option<String>,
+    pub db: Option<String>,
+    #[serde(skip_deserializing)]
+    pub url: String,
 }
 
 impl TusdConfig {
@@ -61,11 +73,45 @@ impl TusdConfig {
     }
 }
 
+impl RedisConfig {
+    pub fn build_connection_string(&mut self) {
+        self.url = String::new();
+        // Protocol
+        self.url.push_str(self.protocol.as_str());
+        self.url.push_str("://");
+
+        //Authentication
+        if let Some(username) = &self.username {
+            self.url.push_str(username);
+
+            if let Some(password) = &self.password {
+                self.url.push(':');
+                self.url.push_str(password);
+            }
+            self.url.push('@');
+        }
+        // Host
+        self.url.push_str(&self.host);
+        if let Some(port) = &self.port {
+            self.url.push(':');
+            self.url.push_str(&port.to_string());
+        }
+
+        // Add database number if present
+        if let Some(db) = &self.db {
+            self.url.push('/');
+            self.url.push_str(&db.to_string());
+        }
+    }
+}
+
 
 #[derive(Debug, Deserialize)]
 pub struct AppConfig {
     #[serde(deserialize_with = "deserialize_tusd_config")]
     pub tusd: TusdConfig,
+    #[serde(deserialize_with = "deserialize_redis_config")]
+    pub redis: RedisConfig,
 }
 
 // Custom deserialization function for TusdConfig
@@ -80,11 +126,20 @@ fn deserialize_tusd_config<'de, D>(deserializer: D) -> Result<TusdConfig, D::Err
     Ok(tusd_config)
 }
 
+fn deserialize_redis_config<'de, D>(deserializer: D) -> Result<RedisConfig, D::Error> where
+    D: Deserializer<'de> {
+    let mut redis_config = RedisConfig::deserialize(deserializer)?;
+
+    redis_config.build_connection_string();
+
+    Ok(redis_config)
+}
 
 
 
-static APP_CONFIG: Lazy<Mutex<AppConfig>> = Lazy::new(|| {
-    Mutex::new(load_config().expect("Failed to load configuration"))
+
+pub static APP_CONFIG: Lazy<Arc<Mutex<AppConfig>>> = Lazy::new(|| {
+    Arc::new(Mutex::new(load_config().expect("Failed to load configuration")))
 });
 
 pub fn load_config() -> Result<AppConfig, config::ConfigError> {
@@ -95,6 +150,6 @@ pub fn load_config() -> Result<AppConfig, config::ConfigError> {
     settings.try_deserialize()
 }
 
-pub fn get_config() -> &'static Mutex<AppConfig> {
+pub fn get_config1() -> &'static Arc<Mutex<AppConfig>> {
     &APP_CONFIG
 }
