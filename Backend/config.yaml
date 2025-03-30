@@ -11,6 +11,6 @@ redis:
   protocol: "redis"
   username:
   password:
-  host: "localhost"
+  host: "redis"
   port: "6379"
   db: 0

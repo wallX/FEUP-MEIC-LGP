@@ -5,14 +5,21 @@ use crate::services::process_file;
 use crate::utils::Singleton;
 
 pub fn start_worker(singleton: Arc<Singleton>) {
-    thread::spawn(move || {
+    tokio::spawn(async move {
         loop {
-            if let Some(file_name) = singleton.queue().next_file() {
-                println!("Worker processing {}", file_name);
-                process_file(file_name);
+            // Clone the Arc before the inner spawn
+            let singleton_clone = singleton.clone();
+
+            if let Some(file_name) = singleton_clone.queue().next_file() {
+
+                tokio::spawn(async move {
+                    println!("processing for: {}", file_name);
+                    process_file(file_name, singleton_clone).await;
+                });
+
             } else {
                 // Sleep for a short time to avoid busy-waiting
-                thread::sleep(std::time::Duration::from_secs(1));
+                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
             }
         }
     });

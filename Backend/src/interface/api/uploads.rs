@@ -66,7 +66,6 @@ impl UploadRequest {
 }
 
 async fn get_uploads(singleton: web::Data<Singleton>) -> HttpResponse {
-    println!("Getting uploaded files");
     HttpResponse::Ok().json("Service is up and running")
 }
 
@@ -75,7 +74,6 @@ async fn upload_ready_hook(
     body: web::Json<Value>,
     singleton: web::Data<Arc<Singleton>>,
 ) -> HttpResponse {
-    println!("Getting uploaded files");
     HttpResponse::Ok().json(controller::api::uploads::upload_ready_hook_logic(body.into_inner(), &singleton).await)
 }
 
