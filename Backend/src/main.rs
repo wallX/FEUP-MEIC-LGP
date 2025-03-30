@@ -28,7 +28,6 @@ async fn main() -> std::io::Result<()> {
     singleton.init_client(client).expect("Failed to initialize client");
 
     let queue = PipelineQueue::new();
-    worker::start_worker(queue.clone());
     singleton.init_queue(queue.clone()).unwrap_or_else(|_| {
         panic!("Failed to initialize queue");
     });
@@ -42,6 +41,7 @@ async fn main() -> std::io::Result<()> {
     let web_data = web::Data::new(shared_singleton.clone());
 
 
+    worker::start_worker(shared_singleton.clone());
 
 
     HttpServer::new(move || {

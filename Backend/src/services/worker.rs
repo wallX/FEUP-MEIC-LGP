@@ -1,11 +1,13 @@
+use std::sync::Arc;
 use std::thread;
 use crate::services::pipeline_queue::PipelineQueue;
 use crate::services::process_file;
+use crate::utils::Singleton;
 
-pub fn start_worker(queue: PipelineQueue) {
+pub fn start_worker(singleton: Arc<Singleton>) {
     thread::spawn(move || {
         loop {
-            if let Some(file_name) = queue.next_file() {
+            if let Some(file_name) = singleton.queue().next_file() {
                 println!("Worker processing {}", file_name);
                 process_file(file_name);
             } else {
