@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/user.dart';
 import 'package:provider/provider.dart';
 import '../provider/user_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -17,23 +18,29 @@ class _RegisterPageState extends State<RegisterPage> {
   UserType _selectedUserType = UserType.user;
   final TextEditingController _stationsController = TextEditingController();
 
-  void _register() {
+  void _register() async {
     if (_formKey.currentState!.validate()) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-      // TODO: Connect to backend and register user // Check if the email is already registered
+      // TODO: Connect to backend and register user // Check if the email is already registered // get the access token
+
+      final storage = FlutterSecureStorage();
+      await storage.write(key: 'access_token', value: 'your_access_token'); 
 
       final user = User(
         name: _nameController.text,
         email: _emailController.text,
         userType: _selectedUserType,
-        //token: 'example_token',
+        tokens: storage,
         stations: _stationsController.text.isNotEmpty
             ? _stationsController.text.split(',')
             : null,
       );
 
-      context.read<UserProvider>().setUser(user);
+      userProvider.setUser(user);
       debugPrint('User Registered: ${user.name}, ${user.email}, ${user.userType}, ${user.stations}');
+      
+      if (!mounted) return;
       Navigator.pop(context); // Go back to the previous screen
     }
   }
