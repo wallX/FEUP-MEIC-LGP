@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/main_page.dart';
 import 'package:app/manager/theme_manager.dart';
+import 'package:app/provider/user_provider.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await themeManager.initTheme();
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => UserProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

@@ -1,16 +1,18 @@
+import 'package:dio/io.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:app/widgets/submission_page/video/video_thumbnail.dart';
 import 'package:app/manager/theme_manager.dart';
-
 import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:tusc/tusc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:app/data/custom_file.dart';
-
 import 'package:app/widgets/submission_page/file_list.dart';
+import 'package:app/services/api_service.dart';
+import 'package:app/services/token_service.dart';
+import 'package:dio/dio.dart';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
@@ -22,6 +24,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
   List<CustomFile> _selectedFiles = [];
   bool _isUploading = false;
   var httpClient = http.Client();
+  final ApiService _apiService = ApiService(TokenService());
 
   @override
   Widget build(BuildContext context) {
@@ -156,23 +159,27 @@ class _SubmissionPageState extends State<SubmissionPage> {
 
   Future<String?> _getUploadUrl(String fileName, int fileLength) async {
     try {
-      final response = await httpClient.post(
-        Uri.parse("http://10.0.2.2/api/uploads"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'file_name': fileName,
-          'file_length': fileLength.toString(),
-        }
+      final response = await _apiService.dio.post(
+        '/api/uploads',
+        options: Options(
+          headers: {
+            'file_name': fileName,
+            'file_length': fileLength.toString(),
+          },
+        ),
       );
     
       if (response.statusCode == 201) {
-        final responseData = response.headers['location'];
-        return responseData;
+        return response.headers.map['location']?.first;
       } else {
-        throw Exception('${response.statusCode} - ${response.body}');
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          message: '${response.statusCode} - ${response.data}'
+        );
       }
-    } catch (e) {
-      throw Exception('Error connecting to server: $e');
+    } on DioException catch (e) {
+      throw Exception('Error connecting to server: ${e.message}');
     }
   }
 
@@ -275,7 +282,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
   @override
   void dispose() {
     // Close the client when the page is disposed
-    httpClient.close();
+    //httpClient.close();
     super.dispose();
   }
 }
