@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/user.dart';
 import 'package:provider/provider.dart';
 import '../provider/user_provider.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../services/token_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -12,6 +12,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final TokenService _tokenService = TokenService();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -24,14 +25,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
       // TODO: Connect to backend and register user // Check if the email is already registered // get the access token
 
-      final storage = FlutterSecureStorage();
-      await storage.write(key: 'access_token', value: 'your_access_token'); 
+       await _tokenService.saveTokens(
+        accessToken: 'placeholder_access_token',
+        refreshToken: 'placeholder_refresh_token'
+      );
 
       final user = User(
         name: _nameController.text,
         email: _emailController.text,
         userType: _selectedUserType,
-        tokens: storage,
+        tokens: _tokenService,
         stations: _stationsController.text.isNotEmpty
             ? _stationsController.text.split(',')
             : null,
@@ -39,7 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       userProvider.setUser(user);
       debugPrint('User Registered: ${user.name}, ${user.email}, ${user.userType}, ${user.stations}');
-      
+
       if (!mounted) return;
       Navigator.pop(context); // Go back to the previous screen
     }

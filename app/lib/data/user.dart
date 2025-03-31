@@ -1,5 +1,5 @@
 // https://medium.com/@mvpcatalyst/exploring-token-based-authentication-and-refresh-tokens-in-flutter-6ae98eee81d8
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:app/services/token_service.dart';
 
 enum UserType {
   journalist,
@@ -10,7 +10,7 @@ class User{
   final String name;
   final String email;
   final UserType userType;
-  final FlutterSecureStorage tokens;
+  final TokenService tokens;
   final List<String>? stations;
   
   User({
