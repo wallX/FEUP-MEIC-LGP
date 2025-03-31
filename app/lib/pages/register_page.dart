@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/user.dart';
+import 'package:provider/provider.dart';
+import '../provider/user_provider.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -27,7 +29,9 @@ class _RegisterPageState extends State<RegisterPage> {
             : null,
       );
 
+      context.read<UserProvider>().setUser(user);
       debugPrint('User Registered: ${user.name}, ${user.email}, ${user.userType}, ${user.stations}');
+      Navigator.pop(context); // Go back to the previous screen
     }
   }
 
@@ -83,9 +87,9 @@ class _RegisterPageState extends State<RegisterPage> {
         if (value == null || value.isEmpty) {
           return 'Please enter your email';
         }
-        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-          return 'Please enter a valid email';
-        }
+        //if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+        //  return 'Please enter a valid email';
+        //}
         return null;
       },
     );
