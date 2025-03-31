@@ -19,6 +19,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _register() {
     if (_formKey.currentState!.validate()) {
+
+      // TODO: Connect to backend and register user // Check if the email is already registered
+
       final user = User(
         name: _nameController.text,
         email: _emailController.text,

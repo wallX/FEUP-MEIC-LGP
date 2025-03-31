@@ -44,6 +44,8 @@ class _ProfilePageState extends State<ProfilePage> {
           Text('Email: ${user?.email ?? 'N/A'}'),
           Text('User Type: ${user?.userType.toString() ?? 'N/A'}'),
           Text('Stations: ${user?.stations?.join(', ') ?? 'N/A'}'),
+          const SizedBox(height: 16),
+          _logoutButton(),  
         ],
       ),
     );
@@ -58,6 +60,15 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       },
       child: const Text('Register'),
+    );
+  }
+
+  Widget _logoutButton(){
+    return ElevatedButton(
+      onPressed: () {
+        context.read<UserProvider>().logout();
+      },
+      child: const Text('Logout'),
     );
   }
 }
