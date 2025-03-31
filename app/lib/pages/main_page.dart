@@ -1,8 +1,8 @@
 import 'package:app/manager/theme_manager.dart';
-import 'package:app/pages/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:app/widgets/nav_bar.dart';
 import 'package:app/pages/home_page.dart';
+import 'package:app/pages/profile_page.dart';
 
 // Class main page holds all the logic of changing through the different pages
 class MainPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
 
   static const List<Widget> _pages = <Widget>[
     HomePage(),
-    RegisterPage(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {

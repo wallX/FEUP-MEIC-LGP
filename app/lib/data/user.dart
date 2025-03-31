@@ -11,7 +11,6 @@ class User{
   final UserType userType;
   final List<String>? stations;
   
-
   User({
     required this.name,
     required this.email,
