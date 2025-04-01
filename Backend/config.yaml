@@ -11,6 +11,11 @@ redis:
   protocol: "redis"
   username:
   password:
-  host: "redis"
+  host: "localhost"
+  #host: "redis"
   port: "6379"
   db: 0
+jwt: 
+  token: "b3dc1860-b859-4a8e-8ed0-909c4734a41f"
+  token_ttl: 60 #in minutes
+  refresh_token_ttl : 7 #in days 

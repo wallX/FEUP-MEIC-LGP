@@ -1,4 +1,6 @@
+use chrono::{DateTime, Utc};
 use redis::{Commands, RedisResult};
+use crate::model::api::user::User;
 
 pub struct RedisClient {
     pub redis_url: String,
@@ -66,6 +68,31 @@ impl RedisClient {
         let _: () = con.del(format!("pending:{}", file_name))?;
 
         println!("channel '{}': {}", msg.get_channel_name(), payload);
+        Ok(())
+    }
+    
+    pub fn get_refresh_token(&self, refresh_token: &str,) -> RedisResult<String> {
+        let mut con = self.client.get_connection()?;
+        let user_id: String = con.get(format!("refresh_token:{}", refresh_token))?;
+        Ok(user_id)
+    }
+    
+    pub fn refresh_token(&self, refresh_token: &str, id: &str, expiry: u64) -> RedisResult<String> {
+        let mut con = self.client.get_connection()?;
+        let user_data = serde_json::json!({
+        "id": id
+        }).to_string();
+
+        // Store the JSON with expiry
+        let _: () = con.set_ex(format!("refresh_token:{}",refresh_token), user_data, expiry)?;
+        
+        Ok(refresh_token.to_string())
+    }
+
+    pub fn revoke_refresh_token(&self, refresh_token: &str) -> RedisResult<()> {
+        let mut conn = self.client.get_connection()?;
+        //let _: () = con.set_nx(format!("pending:{}", file_name), 0)?;
+        let _: () = conn.del(format!("refresh_token:{}", refresh_token))?;
         Ok(())
     }
 

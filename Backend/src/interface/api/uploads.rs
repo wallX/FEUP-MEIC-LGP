@@ -8,14 +8,11 @@ use serde_json::Value;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
-        web::resource("/uploads")
-            .route(web::post().to(initiate_upload))
-            .route(web::get().to(get_uploads)),
-    )
-        .service(
-            web::resource("/uploads/hook")
-                .route(web::post().to(upload_ready_hook)),
-        );
+        web::scope("/uploads")
+            .route("",web::post().to(initiate_upload))
+            .route("",web::get().to(get_uploads))
+            .route("/hook",web::post().to(upload_ready_hook)),
+    );
 }
 
 

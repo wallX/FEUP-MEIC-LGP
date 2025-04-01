@@ -1,2 +1,2 @@
-pub(crate) mod auth;
-pub(crate) mod uploads;
+pub mod auth;
+pub mod uploads;
