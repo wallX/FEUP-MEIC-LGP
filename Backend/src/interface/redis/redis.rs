@@ -3,14 +3,12 @@ use redis::{Commands, RedisResult};
 use crate::model::api::user::User;
 
 pub struct RedisClient {
-    pub redis_url: String,
     pub client: redis::Client,
 }
 
 impl RedisClient {
     pub fn new(redis_url: String) -> Self {
         RedisClient{
-            redis_url: redis_url.clone(),
             client: redis::Client::open(redis_url).expect("Invalid connection URL"),
         }
     }
@@ -95,6 +93,19 @@ impl RedisClient {
         let _: () = conn.del(format!("refresh_token:{}", refresh_token))?;
         Ok(())
     }
+    
+    pub fn blacklist_jwt(&self, jwt: &str, exp: u64) -> RedisResult<()> {
+        let mut con = self.client.get_connection()?;
+        let _: () = con.set_ex(format!("blacklist:{}", jwt), "blacklisted", exp)?;
+        Ok(())
+    }
+
+    pub fn check_jwt(&self, jwt: &str) -> RedisResult<bool> {
+        let mut con = self.client.get_connection()?;
+        let result: Option<String> = con.get(format!("blacklist:{}", jwt))?;
+        Ok(result.is_none()) 
+    }
+    
 
 
 

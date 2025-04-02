@@ -6,12 +6,18 @@ use crate::interface::api::auth::LoginRequest;
 use crate::model::api::jwt::{generate_jwt, validate_jwt, Claims};
 use crate::model::api::Role::Role;
 use crate::model::api::user::User;
+use crate::utils::password_util::{hash_password, verify_password};
 use crate::utils::Singleton;
 
 pub fn extract_jwt_controller (auth_str: &str, singleton: &Singleton) -> Result<(String,Claims), String> {
     let secret = singleton.config().lock().unwrap().jwt.token.clone();
     if auth_str.starts_with("Bearer ") {
         let token = &auth_str[7..];
+        match singleton.redis().check_jwt(token) {
+            Ok(false) => return Err("Token is blacklisted".to_string()),
+            Ok(_) => {},
+            Err(_) => return Err("Failed to check JWT blacklist".to_string()),
+        };
          return match validate_jwt(token, &secret) {
             Ok(claims) => Ok((token.parse().unwrap(), claims)),
             Err(err) => match *err.kind() {
@@ -29,12 +35,14 @@ pub fn validate_user_login(email: String, password: String, singleton: &Singleto
     let mock_user = User {
         id: Uuid::new_v4(),
         email: "test@example.com".to_string(),
-        hash: "password123".to_string(), // Normally, use a hashed password!
+        hash: hash_password(&"password123".to_string())?, // Normally, use a hashed password!
         roles: vec![Role::Admin], // Mock role
         is_active: true,
     };
+    
+    // Password hasher 
 
-    if email == mock_user.email && password == mock_user.hash {
+    if email == mock_user.email && verify_password(password.as_ref(), mock_user.hash.as_ref()) {
         return Ok(mock_user);
     } 
     Err(String::from("Invalid email or password"))
@@ -116,5 +124,6 @@ pub fn refresh_token(refresh_token: &str, singleton: &Singleton) -> Result<serde
 pub fn logout_user(token: &str, exp: u64, refresh_token: &str, singleton: &Singleton) -> Result<serde_json::value::Value, String> {
     // Revoke the refresh token
     singleton.redis().revoke_refresh_token(refresh_token).unwrap();
+    singleton.redis().blacklist_jwt(token, exp).unwrap();
     Ok(serde_json::json!({ "message": "Logged out successfully" }))
 }
