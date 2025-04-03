@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-/auth
+/api/auth
 ```
 
 ---
@@ -10,7 +10,7 @@
 ## **1. Login**
 ### **Endpoint:**
 ```
-POST /auth/login
+POST /api/auth/login
 ```
 
 ### **Headers:**
@@ -38,7 +38,7 @@ None
 ## **2. Logout**
 ### **Endpoint:**
 ```
-POST /auth/logout
+POST /api/auth/logout
 ```
 
 ### **Headers:**
@@ -62,7 +62,7 @@ None
 ## **3. Refresh Token**
 ### **Endpoint:**
 ```
-POST /auth/refresh
+POST /api/auth/refresh
 ```
 
 ### **Headers:**
@@ -88,7 +88,7 @@ None
 ## **4. Authenticate User and Role Check**
 ### **Endpoint:**
 ```
-GET /auth
+GET /api/auth
 ```
 
 ### **Headers:**
