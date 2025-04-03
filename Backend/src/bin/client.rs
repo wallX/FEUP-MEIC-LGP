@@ -52,6 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .header("Content-Type", "application/offset+octet-stream")
             .header("Upload-Offset", offset.to_string())
             .header("Tus-Resumable", "1.0.0")
+            .header("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzZjQxZjA0Yi02NTBlLTQ4ZWUtOThmNi04NTA1ZmVlM2RmNWUiLCJleHAiOjE3NDM2ODk4MjcsInJvbGVzIjpbIkFkbWluIl19.ENcVEaCAVi5pCoKkW1wXzvBoKFuem49jqgIe0xr1nto")
             .body(chunk.to_vec())
             .send()
             .await?;
