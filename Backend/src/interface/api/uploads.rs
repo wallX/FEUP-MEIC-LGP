@@ -1,9 +1,9 @@
-use std::sync::Arc;
-use crate::utils::Singleton;
-use crate::{controller};
 use crate::model::api::uploads::UploadRequest;
+use crate::utils::Singleton;
+use crate::controller;
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde_json::Value;
+use std::sync::Arc;
 
 
 pub fn config(cfg: &mut web::ServiceConfig) {

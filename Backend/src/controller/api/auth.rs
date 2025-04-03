@@ -1,28 +1,27 @@
-use actix_web::HttpResponse;
+use crate::interface::api::auth::LoginRequest;
+use crate::model::api::jwt::{generate_jwt, validate_jwt, Claims};
+use crate::model::api::user::User;
+use crate::model::api::Role::Role;
+use crate::utils::password_util::{hash_password, verify_password};
+use crate::utils::Singleton;
 use chrono::{Duration, Utc};
 use jsonwebtoken::errors::ErrorKind;
 use uuid::Uuid;
-use crate::interface::api::auth::LoginRequest;
-use crate::model::api::jwt::{generate_jwt, validate_jwt, Claims};
-use crate::model::api::Role::Role;
-use crate::model::api::user::User;
-use crate::utils::password_util::{hash_password, verify_password};
-use crate::utils::Singleton;
 
 pub fn extract_jwt_controller (auth_str: &str, singleton: &Singleton) -> Result<(String,Claims), String> {
     let secret = singleton.config().lock().unwrap().jwt.token.clone();
     if auth_str.starts_with("Bearer ") {
         let token = &auth_str[7..];
         match singleton.redis().check_jwt(token) {
-            Ok(false) => return Err("Token is blacklisted".to_string()),
+            Ok(false) => return Err("JWT is blacklisted".to_string()),
             Ok(_) => {},
             Err(_) => return Err("Failed to check JWT blacklist".to_string()),
         };
          return match validate_jwt(token, &secret) {
             Ok(claims) => Ok((token.parse().unwrap(), claims)),
             Err(err) => match *err.kind() {
-                ErrorKind::ExpiredSignature => Err(String::from("Token expired")),
-                _ => Err(String::from("Invalid token")),
+                ErrorKind::ExpiredSignature => Err(String::from("JWT expired")),
+                _ => Err(String::from("Invalid JWT")),
             },
         };
     }
@@ -78,7 +77,7 @@ pub fn generate_tokens(login: &LoginRequest, singleton: &Singleton) -> Result<se
 
 //refresh token
 
-pub fn refresh_token(refresh_token: &str, singleton: &Singleton) -> Result<serde_json::value::Value, String> {
+pub fn refresh_token(refresh_token: &str, claims: &Claims,token: &str, singleton: &Singleton) -> Result<serde_json::value::Value, String> {
     let secret = singleton.config().lock().unwrap().jwt.token.clone();
     let token_ttl = singleton.config().lock().unwrap().jwt.token_ttl;
     let refresh_token_ttl = singleton.config().lock().unwrap().jwt.refresh_token_ttl;
@@ -92,6 +91,12 @@ pub fn refresh_token(refresh_token: &str, singleton: &Singleton) -> Result<serde
     // Extract user ID and roles from the stored JSON data
     let parsed: serde_json::Value = serde_json::from_str(&user_data).map_err(|_| "Invalid refresh token data")?;
     let user_id = parsed["id"].as_str().ok_or("Invalid user ID")?.parse::<Uuid>().map_err(|_| "Invalid UUID format")?;
+    
+    
+    match claims.sub.to_string().eq(&user_id.to_string()) {
+        true => {},
+        false => return Err("Refresh Token and JWT must belong to the same user".to_string()),
+    }
     
     //Fetch user from db
     let roles: Vec<Role> = vec![Role::Admin];
@@ -111,6 +116,7 @@ pub fn refresh_token(refresh_token: &str, singleton: &Singleton) -> Result<serde
     
     singleton.redis().refresh_token(&new_refresh_token.to_string(), &user_id.to_string(), expiration as u64).unwrap();
     // Revoke the old refresh token
+    singleton.redis().blacklist_jwt(token, claims.exp as u64).unwrap();
     singleton.redis().revoke_refresh_token(refresh_token).unwrap();
 
     Ok(serde_json::json!({

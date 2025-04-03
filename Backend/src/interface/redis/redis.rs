@@ -1,6 +1,4 @@
-use chrono::{DateTime, Utc};
 use redis::{Commands, RedisResult};
-use crate::model::api::user::User;
 
 pub struct RedisClient {
     pub client: redis::Client,

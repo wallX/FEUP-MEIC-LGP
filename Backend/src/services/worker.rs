@@ -1,8 +1,6 @@
-use std::sync::Arc;
-use std::thread;
-use crate::services::pipeline_queue::PipelineQueue;
 use crate::services::process_file;
 use crate::utils::Singleton;
+use std::sync::Arc;
 
 pub fn start_worker(singleton: Arc<Singleton>) {
     tokio::spawn(async move {

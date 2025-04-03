@@ -1,8 +1,6 @@
-use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
-use rand::Rng;
-use base64::{encode, decode};
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 
 /// Generates a password hash and a random salt.
 ///

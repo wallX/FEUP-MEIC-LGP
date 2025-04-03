@@ -1,17 +1,10 @@
-use std::sync::Arc;
-use actix_web::{error, web, Error, HttpMessage, HttpRequest, HttpResponse};
-use actix_web::dev::ServiceRequest;
-use actix_web::web::{route, to};
-use actix_web_httpauth::extractors::bearer::BearerAuth;
-use jsonwebtoken::{decode, Validation};
-use jsonwebtoken::errors::ErrorKind;
-use serde::Deserialize;
-use uuid::Uuid;
 use crate::controller::api::auth::{extract_jwt_controller, generate_tokens, logout_user, refresh_token};
+use crate::model::api::jwt::Claims;
 use crate::model::api::Role::Role;
-use crate::model::api::jwt::{generate_jwt, validate_jwt, Claims};
-use crate::model::api::user::User;
 use crate::utils::Singleton;
+use actix_web::{web, Error, HttpMessage, HttpRequest, HttpResponse};
+use serde::Deserialize;
+use std::sync::Arc;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -39,7 +32,7 @@ async fn login(data: web::Json<LoginRequest>, singleton: web::Data<Arc<Singleton
 async fn logout(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
     let (token,claims) = match extract_jwt(req.clone(), singleton.clone()) {
         Ok(token) => token,
-        Err(err) => return HttpResponse::BadRequest().json(format!("{}", err)),
+        Err(err) => return err,
     };
     let refresh_token = match extract_refresh_token(req.clone()) {
         Ok(token) => token,
@@ -52,38 +45,63 @@ async fn logout(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpR
 }
 
 async fn refresh(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
-    let token = match extract_refresh_token(req.clone()) {
+    let refresh_token_string = match extract_refresh_token(req.clone()) {
         Ok(token) => {
             token
         }
         Err(err) => return HttpResponse::BadRequest().json(format!("{}", err)),
     };
+
+    let (token,claim) = match extract_jwt(req.clone(), singleton.clone()) {
+        Ok(token) => token,
+        Err(err) => return err,
+    };
     
-    match refresh_token(&token, &singleton) {
+    match refresh_token(&refresh_token_string,&claim, &token, &singleton) {
         Ok(tokens) => HttpResponse::Ok().json(tokens),
         Err(error) => return HttpResponse::Unauthorized().json(error),
     }
 }
 
 async fn auth(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
-    match check_role(&req, Role::Admin, singleton) {
+
+    let role_header = req.headers().get("User-Role");
+    let role_str = match role_header {
+        Some(value) => match value.to_str() {
+            Ok(str) => str,
+            Err(_) => return HttpResponse::BadRequest().insert_header(("Auth-Message", "Invalid role header format")).json("Invalid role header format"),
+        },
+        None => return HttpResponse::BadRequest().insert_header(("Auth-Message", "Missing role header")).json("Missing role header"),
+    };
+
+    // Convert string to Role enum
+    let required_role = match role_str.parse::<Role>() {
+        Ok(role) => role,
+        Err(_) => return HttpResponse::BadRequest().insert_header(("Auth-Message", "Invalid role value")).json("Invalid role value"),
+    };
+    
+    
+    
+    
+    
+    match check_role(&req, required_role, singleton) {
         Ok(claims) => HttpResponse::Ok().json(format!("Admin access granted to {:?}", claims.sub)),
         Err(err) => err,
     }
 }
 
-pub fn extract_jwt(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> Result<(String,Claims), Error> {
+pub fn extract_jwt(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> Result<(String,Claims), HttpResponse> {
     if let Some(auth_header) = req.headers().get("Authorization") {
         if let Ok(auth_str) = auth_header.to_str() {
             return match extract_jwt_controller(auth_str, &singleton) {
                 Ok(res) => Ok(res),
                 Err(err) => {
-                    Err(actix_web::error::ErrorUnauthorized(err))
+                    Err(HttpResponse::Unauthorized().json(err.to_string()))
                 }
             }
         }
     }
-    Err(actix_web::error::ErrorUnauthorized("No JWT valid token found"))
+    Err(HttpResponse::Unauthorized().json("No JWT valid token found".to_string()))
 }
 
 pub fn extract_refresh_token(req: HttpRequest) -> Result<String, Error> {
@@ -105,6 +123,6 @@ pub fn check_role(req: &HttpRequest, required_role: Role, singleton: web::Data<A
                 Err(HttpResponse::Forbidden().json("Insufficient permissions"))
             }
         }
-        Err(err) => Err(err.error_response()),
+        Err(err) => Err(err),
     }
 }

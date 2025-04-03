@@ -1,9 +1,6 @@
-use reqwest::Client;
-use std::fs::File;
+use crate::password_util::{hash_password, verify_password};
 use std::hash::Hash;
 use std::io::Read;
-use std::path::Path;
-use crate::password_util::{hash_password, verify_password};
 
 #[path = "../utils/password_util.rs"]
 mod password_util;
