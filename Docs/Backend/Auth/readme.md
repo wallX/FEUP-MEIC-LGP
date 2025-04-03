@@ -19,7 +19,7 @@ None
 ### **Request Body:**
 ```json
 {
-  "email": "user@example.com",
+  "email": "test@example.com",
   "password": "password123"
 }
 ```
