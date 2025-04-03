@@ -84,8 +84,8 @@ async fn auth(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpRes
     
     
     
-    match check_role(&req, required_role, singleton) {
-        Ok(claims) => HttpResponse::Ok().json(format!("Admin access granted to {:?}", claims.sub)),
+    match check_role(&req, required_role.clone(), singleton) {
+        Ok(claims) => HttpResponse::Ok().json(format!("Role {:?} access granted to {:?}", required_role,claims.sub)),
         Err(err) => err,
     }
 }

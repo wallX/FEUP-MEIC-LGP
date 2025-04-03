@@ -35,7 +35,7 @@ pub fn validate_user_login(email: String, password: String, singleton: &Singleto
         id: Uuid::new_v4(),
         email: "test@example.com".to_string(),
         hash: hash_password(&"password123".to_string())?, // Normally, use a hashed password!
-        roles: vec![Role::Admin], // Mock role
+        roles: vec![Role::Admin, Role::User, Role::Moderator], // Mock role
         is_active: true,
     };
     
@@ -99,7 +99,7 @@ pub fn refresh_token(refresh_token: &str, claims: &Claims,token: &str, singleton
     }
     
     //Fetch user from db
-    let roles: Vec<Role> = vec![Role::Admin];
+    let roles: Vec<Role> =  vec![Role::Admin, Role::User, Role::Moderator]; // Mock role;
 
     // Generate a new JWT token
     let new_jwt = match generate_jwt(user_id, roles.clone(), &secret, token_ttl) {
