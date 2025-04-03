@@ -1,14 +1,12 @@
 use redis::{Commands, RedisResult};
 
 pub struct RedisClient {
-    pub redis_url: String,
     pub client: redis::Client,
 }
 
 impl RedisClient {
     pub fn new(redis_url: String) -> Self {
         RedisClient{
-            redis_url: redis_url.clone(),
             client: redis::Client::open(redis_url).expect("Invalid connection URL"),
         }
     }
@@ -68,6 +66,44 @@ impl RedisClient {
         println!("channel '{}': {}", msg.get_channel_name(), payload);
         Ok(())
     }
+    
+    pub fn get_refresh_token(&self, refresh_token: &str,) -> RedisResult<String> {
+        let mut con = self.client.get_connection()?;
+        let user_id: String = con.get(format!("refresh_token:{}", refresh_token))?;
+        Ok(user_id)
+    }
+    
+    pub fn refresh_token(&self, refresh_token: &str, id: &str, expiry: u64) -> RedisResult<String> {
+        let mut con = self.client.get_connection()?;
+        let user_data = serde_json::json!({
+        "id": id
+        }).to_string();
+
+        // Store the JSON with expiry
+        let _: () = con.set_ex(format!("refresh_token:{}",refresh_token), user_data, expiry)?;
+        
+        Ok(refresh_token.to_string())
+    }
+
+    pub fn revoke_refresh_token(&self, refresh_token: &str) -> RedisResult<()> {
+        let mut conn = self.client.get_connection()?;
+        //let _: () = con.set_nx(format!("pending:{}", file_name), 0)?;
+        let _: () = conn.del(format!("refresh_token:{}", refresh_token))?;
+        Ok(())
+    }
+    
+    pub fn blacklist_jwt(&self, jwt: &str, exp: u64) -> RedisResult<()> {
+        let mut con = self.client.get_connection()?;
+        let _: () = con.set_ex(format!("blacklist:{}", jwt), "blacklisted", exp)?;
+        Ok(())
+    }
+
+    pub fn check_jwt(&self, jwt: &str) -> RedisResult<bool> {
+        let mut con = self.client.get_connection()?;
+        let result: Option<String> = con.get(format!("blacklist:{}", jwt))?;
+        Ok(result.is_none()) 
+    }
+    
 
 
 

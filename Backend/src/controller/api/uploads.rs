@@ -1,9 +1,9 @@
-use serde_json::Value;
-use std::path::Path;
-use base64::{engine::general_purpose, Engine as _};
-use crate::utils::Singleton;
 use crate::interface::api::tus_client::TusClient;
 use crate::model::api::uploads::{NativeResponse, UploadRequest};
+use crate::utils::Singleton;
+use base64::{engine::general_purpose, Engine as _};
+use serde_json::Value;
+use std::path::Path;
 
 pub async fn initiate_upload_logic(req: UploadRequest, singleton: &Singleton) -> Result<NativeResponse, String> {
     let config = &singleton.config().lock().unwrap();

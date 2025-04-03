@@ -1,8 +1,6 @@
-use std::sync::Arc;
-use std::thread;
-use crate::services::pipeline_queue::PipelineQueue;
 use crate::services::process_file;
 use crate::utils::Singleton;
+use std::sync::Arc;
 
 pub fn start_worker(singleton: Arc<Singleton>) {
     tokio::spawn(async move {
@@ -12,9 +10,22 @@ pub fn start_worker(singleton: Arc<Singleton>) {
 
             if let Some(file_name) = singleton_clone.queue().next_file() {
 
+                println!("Spawning processing task for: {}", file_name.clone());
+
                 tokio::spawn(async move {
-                    println!("processing for: {}", file_name);
-                    process_file(file_name, singleton_clone).await;
+                    println!("Processing file: {}", file_name.clone());
+
+                    let file_name_for_logging = file_name.clone(); // Clone before moving
+
+                    let result = tokio::task::spawn_blocking(move || {
+                        tokio::runtime::Handle::current().block_on(async move {
+                            process_file(file_name, singleton_clone).await;
+                        })
+                    }).await;
+
+                    if let Err(e) = result {
+                        eprintln!("Error processing file {}: {:?}", file_name_for_logging, e);
+                    }
                 });
 
             } else {

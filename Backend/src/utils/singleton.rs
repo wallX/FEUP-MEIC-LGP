@@ -1,11 +1,10 @@
-use std::io::empty;
-use reqwest::Client;
+use crate::config::config;
+use crate::config::config::AppConfig;
 use crate::interface::redis::redis::RedisClient;
 use crate::services::pipeline_queue::PipelineQueue;
-use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
 use redis::Commands;
-use crate::config::config;
-use crate::config::config::{load_config, AppConfig};
+use reqwest::Client;
+use std::sync::{Arc, Mutex, OnceLock};
 // ... other imports
 
 pub struct Singleton {

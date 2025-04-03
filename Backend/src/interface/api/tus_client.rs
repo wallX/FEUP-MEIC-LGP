@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use reqwest::{Client, Response};
 use crate::model::api::uploads::NativeResponse;
+use reqwest::{Client, Response};
+use std::collections::HashMap;
 
 pub struct TusClient<'a> {
     client: &'a Client,  // Explicit lifetime

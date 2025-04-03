@@ -5,17 +5,17 @@ mod config;
 mod interface;
 mod controller;
 
-use std::sync::Arc;
+use crate::config::config::load_config;
 use crate::utils::Singleton;
+use actix_cors::Cors;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use reqwest::Client;
 use interface::api;
 use interface::redis::redis::RedisClient;
+use redis::ConnectionLike;
+use reqwest::Client;
 use services::pipeline_queue::PipelineQueue;
 use services::worker;
-use actix_cors::Cors;
-use redis::ConnectionLike;
-use crate::config::config::load_config;
+use std::sync::Arc;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

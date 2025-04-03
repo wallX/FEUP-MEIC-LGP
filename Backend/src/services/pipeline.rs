@@ -1,8 +1,8 @@
+use crate::utils::Singleton;
 use std::fs;
 use std::sync::Arc;
 use std::thread::sleep;
 use std::time::Duration;
-use crate::utils::Singleton;
 
 async fn make_analysis_folder(file_name: &str, singleton: Arc<Singleton>) {
     let path = format!("uploads/{}_analysis", file_name);

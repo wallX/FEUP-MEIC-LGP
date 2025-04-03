@@ -1,21 +1,18 @@
-use std::sync::Arc;
-use crate::utils::Singleton;
-use crate::{controller};
 use crate::model::api::uploads::UploadRequest;
+use crate::utils::Singleton;
+use crate::controller;
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde_json::Value;
+use std::sync::Arc;
 
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
-        web::resource("/uploads")
-            .route(web::post().to(initiate_upload))
-            .route(web::get().to(get_uploads)),
-    )
-        .service(
-            web::resource("/uploads/hook")
-                .route(web::post().to(upload_ready_hook)),
-        );
+        web::scope("/uploads")
+            .route("",web::post().to(initiate_upload))
+            .route("",web::get().to(get_uploads))
+            .route("/hook",web::post().to(upload_ready_hook)),
+    );
 }
 
 

@@ -3,7 +3,6 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Deserializer};
 use std::sync::{Arc, Mutex};
 
-
 #[derive(Debug, Deserialize)]
 pub struct TusdConfig {
     pub protocol: String,
@@ -23,18 +22,6 @@ pub struct TusdConfig {
 
     #[serde(skip_deserializing)]  // Skip deserialization for this field
     pub external_host: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct RedisConfig {
-    pub protocol: String,
-    pub username: Option<String>,
-    pub password: Option<String>,
-    pub host: String,
-    pub port: Option<String>,
-    pub db: Option<String>,
-    #[serde(skip_deserializing)]
-    pub url: String,
 }
 
 impl TusdConfig {
@@ -73,6 +60,18 @@ impl TusdConfig {
     }
 }
 
+#[derive(Debug, Deserialize)]
+pub struct RedisConfig {
+    pub protocol: String,
+    pub username: Option<String>,
+    pub password: Option<String>,
+    pub host: String,
+    pub port: Option<String>,
+    pub db: Option<String>,
+    #[serde(skip_deserializing)]
+    pub url: String,
+}
+
 impl RedisConfig {
     pub fn build_connection_string(&mut self) {
         self.url = String::new();
@@ -105,6 +104,15 @@ impl RedisConfig {
     }
 }
 
+#[derive(Debug, Deserialize)]
+pub struct TokenConfig {
+    pub token: String,
+    pub token_ttl: i64,
+    pub refresh_token_ttl: i64,
+}
+
+
+
 
 #[derive(Debug, Deserialize)]
 pub struct AppConfig {
@@ -112,6 +120,7 @@ pub struct AppConfig {
     pub tusd: TusdConfig,
     #[serde(deserialize_with = "deserialize_redis_config")]
     pub redis: RedisConfig,
+    pub jwt: TokenConfig,
 }
 
 // Custom deserialization function for TusdConfig
