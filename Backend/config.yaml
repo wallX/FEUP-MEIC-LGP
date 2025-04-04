@@ -17,5 +17,5 @@ redis:
   db: 0
 jwt: 
   token: "b3dc1860-b859-4a8e-8ed0-909c4734a41f"
-  token_ttl: 60 #in minutes
+  token_ttl: 1 #in minutes
   refresh_token_ttl : 7 #in days 

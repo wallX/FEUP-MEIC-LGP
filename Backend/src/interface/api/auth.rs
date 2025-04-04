@@ -30,7 +30,7 @@ async fn login(data: web::Json<LoginRequest>, singleton: web::Data<Arc<Singleton
     }
 }
 async fn logout(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
-    let (token,claims) = match extract_jwt(req.clone(), singleton.clone()) {
+    let (token,claims) = match extract_jwt(req.clone(),false, singleton.clone()) {
         Ok(token) => token,
         Err(err) => return err,
     };
@@ -52,7 +52,7 @@ async fn refresh(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> Http
         Err(err) => return HttpResponse::BadRequest().json(format!("{}", err)),
     };
 
-    let (token,claim) = match extract_jwt(req.clone(), singleton.clone()) {
+    let (token,claim) = match extract_jwt(req.clone(),false, singleton.clone()) {
         Ok(token) => token,
         Err(err) => return err,
     };
@@ -90,10 +90,10 @@ async fn auth(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpRes
     }
 }
 
-pub fn extract_jwt(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> Result<(String,Claims), HttpResponse> {
+pub fn extract_jwt(req: HttpRequest, validate: bool, singleton: web::Data<Arc<Singleton>>) -> Result<(String,Claims), HttpResponse> {
     if let Some(auth_header) = req.headers().get("Authorization") {
         if let Ok(auth_str) = auth_header.to_str() {
-            return match extract_jwt_controller(auth_str, &singleton) {
+            return match extract_jwt_controller(auth_str, &singleton, Option::from(validate)) {
                 Ok(res) => Ok(res),
                 Err(err) => {
                     Err(HttpResponse::Unauthorized().json(err.to_string()))
@@ -115,7 +115,7 @@ pub fn extract_refresh_token(req: HttpRequest) -> Result<String, Error> {
 
 // Role-based access function
 pub fn check_role(req: &HttpRequest, required_role: Role, singleton: web::Data<Arc<Singleton>>) -> Result<Claims, HttpResponse> {
-    match extract_jwt(req.clone(), singleton) {
+    match extract_jwt(req.clone(),true, singleton) {
         Ok((_,claims)) => {
             if claims.roles.contains(&required_role) {
                 Ok(claims)

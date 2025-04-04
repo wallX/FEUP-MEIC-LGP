@@ -34,3 +34,15 @@ pub fn validate_jwt(token: &str, secret: &str) -> Result<Claims, jsonwebtoken::e
     )?;
     Ok(token_data.claims)
 }
+
+pub fn decode_expired_jwt(token: &str, secret: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
+    let mut validation = Validation::default();
+    validation.validate_exp = false; // Ignore expiration validation
+
+    let token_data = jsonwebtoken::decode::<Claims>(
+        token,
+        &DecodingKey::from_secret(secret.as_ref()),
+        &validation,
+    )?;
+    Ok(token_data.claims)
+}

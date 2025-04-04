@@ -1,5 +1,5 @@
 use crate::interface::api::auth::LoginRequest;
-use crate::model::api::jwt::{generate_jwt, validate_jwt, Claims};
+use crate::model::api::jwt::{decode_expired_jwt, generate_jwt, validate_jwt, Claims};
 use crate::model::api::user::User;
 use crate::model::api::Role::Role;
 use crate::utils::password_util::{hash_password, verify_password};
@@ -8,8 +8,9 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::errors::ErrorKind;
 use uuid::Uuid;
 
-pub fn extract_jwt_controller (auth_str: &str, singleton: &Singleton) -> Result<(String,Claims), String> {
+pub fn extract_jwt_controller (auth_str: &str, singleton: &Singleton, validate: Option<bool>) -> Result<(String,Claims), String> {
     let secret = singleton.config().lock().unwrap().jwt.token.clone();
+    let validate = validate.unwrap_or(true);
     if auth_str.starts_with("Bearer ") {
         let token = &auth_str[7..];
         match singleton.redis().check_jwt(token) {
@@ -17,13 +18,16 @@ pub fn extract_jwt_controller (auth_str: &str, singleton: &Singleton) -> Result<
             Ok(_) => {},
             Err(_) => return Err("Failed to check JWT blacklist".to_string()),
         };
-         return match validate_jwt(token, &secret) {
-            Ok(claims) => Ok((token.parse().unwrap(), claims)),
-            Err(err) => match *err.kind() {
+
+        return match (validate, validate_jwt(token, &secret), decode_expired_jwt(token, &secret)) {
+            (true, Ok(claims), _) | (false, _, Ok(claims)) => Ok((token.parse().unwrap(), claims)),
+            (_, Err(err), _) | (_, _, Err(err)) => match *err.kind() {
                 ErrorKind::ExpiredSignature => Err(String::from("JWT expired")),
                 _ => Err(String::from("Invalid JWT")),
             },
         };
+        
+         
     }
     Err(String::from("Token Error Controller"))
 }
