@@ -20,6 +20,7 @@ class AuthInterceptor extends Interceptor {
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401 && !_isRefreshing) {
       _isRefreshing = true;
+
       try {
         final success = await _tokenService.refreshTokens();
         if (success) {
@@ -27,7 +28,7 @@ class AuthInterceptor extends Interceptor {
           final token = await _tokenService.getAccessToken();
           final opts = Options(
             method: err.requestOptions.method,
-            headers: {'Authorization': '$token'},
+            headers: {'Authorization': 'Bearer $token'},
           );
           final response = await _dio.request(
             err.requestOptions.path,
@@ -45,11 +46,12 @@ class AuthInterceptor extends Interceptor {
     handler.next(err);
   }
 
+  /// Adds the access (JWT) token to the request headers if available.
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final token = await _tokenService.getAccessToken();
     if (token != null) {
-      options.headers['Authorization'] = token;
+      options.headers['Authorization'] = 'Bearer $token';
     }
     handler.next(options);
   }
