@@ -11,8 +11,10 @@ import 'package:http/http.dart' as http;
 import 'package:app/data/custom_file.dart';
 import 'package:app/widgets/submission_page/file_list.dart';
 import 'package:app/services/api_service.dart';
-import 'package:app/services/token_service.dart';
 import 'package:dio/dio.dart';
+import 'package:app/provider/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:app/data/user.dart';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
@@ -24,8 +26,17 @@ class _SubmissionPageState extends State<SubmissionPage> {
   List<CustomFile> _selectedFiles = [];
   bool _isUploading = false;
   var httpClient = http.Client();
-  final ApiService _apiService = ApiService(TokenService());
+  late final ApiService _apiService;
+  User? _user;
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    _user = userProvider.user!; 
+    _apiService = ApiService(_user!.tokens);
+  }
+  
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -165,6 +176,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
           headers: {
             'file_name': fileName,
             'file_length': fileLength.toString(),
+            'journalist': _user!.name,
           },
         ),
       );
