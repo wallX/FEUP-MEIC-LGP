@@ -1,4 +1,3 @@
-import 'package:dio/io.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
@@ -25,7 +24,9 @@ class SubmissionPage extends StatefulWidget {
 class _SubmissionPageState extends State<SubmissionPage> {
   List<CustomFile> _selectedFiles = [];
   bool _isUploading = false;
+
   var httpClient = http.Client();
+
   late final ApiService _apiService;
   late final User _user;
 
@@ -218,6 +219,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
         tempDirectory.createSync(recursive: true);
       }
       
+      // TODO: Should use Dio to make it easier, but it isn't using bc the tusc package doesn't accept it
       final tusClient = TusClient(
         url: uri!, 
         file: uploadFile.file,
@@ -225,6 +227,9 @@ class _SubmissionPageState extends State<SubmissionPage> {
         timeout: Duration(seconds: 30),
         cache: TusPersistentCache(tempDirectory.path),
         httpClient: httpClient,
+        headers: {
+          'Authorization': 'Bearer ${_user.tokens.getAccessToken()}',
+        }
       );
 
       // Since the way the package works it always sends a POST first and our server doesn't support that, 
