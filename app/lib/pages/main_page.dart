@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:app/widgets/nav_bar.dart';
 import 'package:app/pages/home_page.dart';
 import 'package:app/pages/profile_page.dart';
+import 'package:app/provider/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:app/pages/login_page.dart';
 
 // Class main page holds all the logic of changing through the different pages
 class MainPage extends StatefulWidget {
@@ -34,13 +37,31 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
       animation: themeManager,
       builder: (context, child) => Scaffold(
         backgroundColor: themeManager.theme.backgroundColor,
-        body: _pages[_selectedIndex],
-        bottomNavigationBar: BottomNavBar(
-            selectedIndex: _selectedIndex,
-            onItemTapped: _onItemTapped,
-          ),
+        body: Consumer<UserProvider>(
+          builder: (context, userProvider, child) {
+            final user = userProvider.user;
+            if (user == null) {
+              return _loggedOutPage();
+            }
+            return _loggedInPage();
+          },
+        ),
       ),
     );
+  }
+
+  _loggedInPage(){
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
+    );
+  }
+
+  _loggedOutPage(){
+    return LoginPage();
   }
 
   @override
