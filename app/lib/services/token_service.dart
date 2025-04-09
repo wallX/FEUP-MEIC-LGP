@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TokenService {
   final FlutterSecureStorage _storage;
-  final ApiService _apiService = ApiService(TokenService());
+  //final ApiService _apiService = ApiService(TokenService());
   
   TokenService(): _storage = const FlutterSecureStorage();
 
@@ -36,18 +36,18 @@ class TokenService {
       final refreshToken = await getRefreshToken();
       if (refreshToken == null) return false;
 
-      final response = await _apiService.dio.post('/api/auth/refresh',
-        options: Options(
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Refresh-Token':refreshToken
-              },
-          )
-      );
-      await saveTokens(
-        accessToken: response.data['token'],
-        refreshToken: response.data['refresh'],
-      );
+      //final response = await _apiService.dio.post('/api/auth/refresh',
+      //  options: Options(
+      //      headers: {
+      //        'Authorization': 'Bearer $token',
+      //        'Refresh-Token':refreshToken
+      //        },
+      //    )
+      //);
+      //await saveTokens(
+      //  accessToken: response.data['token'],
+      //  refreshToken: response.data['refresh'],
+      //);
 
       return true;
     } catch (e) {

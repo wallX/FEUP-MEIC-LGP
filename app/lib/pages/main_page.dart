@@ -30,16 +30,16 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Builder(
-        builder: (context) => Scaffold(
-          body: _pages[_selectedIndex],
-          bottomNavigationBar: BottomNavBar(
+    return AnimatedBuilder(
+      animation: themeManager,
+      builder: (context, child) => Scaffold(
+        backgroundColor: themeManager.theme.backgroundColor,
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: BottomNavBar(
             selectedIndex: _selectedIndex,
             onItemTapped: _onItemTapped,
           ),
-        ),
-      )
+      ),
     );
   }
 
