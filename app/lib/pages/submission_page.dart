@@ -27,14 +27,14 @@ class _SubmissionPageState extends State<SubmissionPage> {
   bool _isUploading = false;
   var httpClient = http.Client();
   late final ApiService _apiService;
-  User? _user;
+  late final User _user;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     _user = userProvider.user!; 
-    _apiService = ApiService(_user!.tokens);
+    _apiService = ApiService(_user.tokens);
   }
   
   @override
@@ -176,7 +176,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
           headers: {
             'file_name': fileName,
             'file_length': fileLength.toString(),
-            'journalist': _user!.name,
+            'journalist': _user.name,
           },
         ),
       );
