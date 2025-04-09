@@ -22,11 +22,6 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
           final user = userProvider.user;
-          if (user == null) {
-            return Center(
-              child: _registerButton(),
-            );
-          }
           return _profileInfo(user);
         },
       ),
@@ -48,18 +43,6 @@ class _ProfilePageState extends State<ProfilePage> {
           _logoutButton(),  
         ],
       ),
-    );
-  }
-
-  Widget _registerButton(){
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const RegisterPage()),
-        );
-      },
-      child: const Text('Register'),
     );
   }
 
