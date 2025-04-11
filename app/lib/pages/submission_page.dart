@@ -14,6 +14,7 @@ import 'package:dio/dio.dart';
 import 'package:app/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:app/data/user.dart';
+import 'package:app/services/token_service.dart';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
@@ -252,6 +253,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
         },
 
         onError: (error) {
+          
           throw Exception('Error uploading ${uploadFile.file.name}: $error');
         },
 
