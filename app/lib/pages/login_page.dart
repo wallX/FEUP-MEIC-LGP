@@ -26,12 +26,38 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() async{
     if (_formKey.currentState!.validate()) {
-
+      
       setState(() {
         _isLoading = true;
       });
 
+      
+
+      
+
       try{
+
+        // TODO: TEMPORARY BYPASS
+        if(_emailController.text == "lgp"){
+          final ApiService apiService = ApiService(_tokenService);
+          await _tokenService.saveTokens(
+              accessToken: "123",
+              refreshToken: "456",
+            );
+          final user = User(
+              name: "PLACEHOLDER", //response.data['name'],
+              email: _emailController.text,
+              userType: UserType.journalist, //response.data['user_type'],
+              tokens: _tokenService,
+              stations: null, //response.data['stations'],
+            );
+            if (!mounted) return;
+            final userProvider = Provider.of<UserProvider>(context, listen: false);
+            userProvider.setUser(user);
+            return;
+        }
+
+
         final ApiService apiService = ApiService(_tokenService);
 
         final response = await apiService.dio.post(
@@ -44,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
 
         debugPrint('Login response: ${response.data}');
 
-        if (response.data['token'] != ""){ // TODO: should be statusCode == 200
+        if (response.statusCode == 200){
 
           debugPrint('Login successful: ${response.data['token']}');
           await _tokenService.saveTokens(
