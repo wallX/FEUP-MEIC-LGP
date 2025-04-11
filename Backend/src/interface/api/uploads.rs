@@ -4,7 +4,9 @@ use crate::controller;
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde_json::Value;
 use std::sync::Arc;
-
+use crate::interface::api::auth::check_role;
+use crate::model::api::jwt::Claims;
+use crate::model::api::Role::Role;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -17,6 +19,13 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 
 
 async fn initiate_upload(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
+    
+    
+    match check_role(&req, Role::Admin, singleton.clone()) {
+        Err(err) => return err,
+        _ => {}
+    }
+    
     let upload_request = match UploadRequest::from_headers(req) {
         Ok(request) => request,
         Err(error_response) => return error_response
