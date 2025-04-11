@@ -1,4 +1,7 @@
+import 'package:dio/dio.dart';
+import 'package:app/services/api_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 
 class TokenService {
   final FlutterSecureStorage _storage;
@@ -28,15 +31,33 @@ class TokenService {
 
   Future<bool> refreshTokens() async {
     try {
+      Dio retryDio = Dio(
+        BaseOptions(
+          baseUrl: "http://10.0.2.2",
+        ),
+      );
+
+      final token = await getAccessToken();
       final refreshToken = await getRefreshToken();
       if (refreshToken == null) return false;
 
-      // TODO: Make API call to refresh tokens
-      // final response = await dio.post('/refresh', data: {'refresh_token': refreshToken});
-      // await saveTokens(
-      //   accessToken: response.data['access_token'],
-      //   refreshToken: response.data['refresh_token'],
-      // );
+      final response = await retryDio.post('/api/auth/refresh',
+        options: Options(
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Refresh-Token':refreshToken
+              },
+          )
+      );
+
+      if (response.statusCode != 200){
+        await saveTokens(
+          accessToken: response.data['token'],
+          refreshToken: response.data['refresh'],
+        );
+      }
+
+      
 
       return true;
     } catch (e) {

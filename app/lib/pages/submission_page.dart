@@ -1,4 +1,3 @@
-import 'package:dio/io.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
@@ -11,8 +10,10 @@ import 'package:http/http.dart' as http;
 import 'package:app/data/custom_file.dart';
 import 'package:app/widgets/submission_page/file_list.dart';
 import 'package:app/services/api_service.dart';
-import 'package:app/services/token_service.dart';
 import 'package:dio/dio.dart';
+import 'package:app/provider/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:app/data/user.dart';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
@@ -23,9 +24,20 @@ class SubmissionPage extends StatefulWidget {
 class _SubmissionPageState extends State<SubmissionPage> {
   List<CustomFile> _selectedFiles = [];
   bool _isUploading = false;
-  var httpClient = http.Client();
-  final ApiService _apiService = ApiService(TokenService());
 
+  var httpClient = http.Client();
+
+  late final ApiService _apiService;
+  late final User _user;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    _user = userProvider.user!; 
+    _apiService = ApiService(_user.tokens);
+  }
+  
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -165,6 +177,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
           headers: {
             'file_name': fileName,
             'file_length': fileLength.toString(),
+            'journalist': _user.name,
           },
         ),
       );
@@ -206,6 +219,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
         tempDirectory.createSync(recursive: true);
       }
       
+      // TODO: Should use Dio to make it easier, but it isn't using bc the tusc package doesn't accept it
       final tusClient = TusClient(
         url: uri!, 
         file: uploadFile.file,
@@ -213,6 +227,9 @@ class _SubmissionPageState extends State<SubmissionPage> {
         timeout: Duration(seconds: 30),
         cache: TusPersistentCache(tempDirectory.path),
         httpClient: httpClient,
+        headers: {
+          'Authorization': 'Bearer ${_user.tokens.getAccessToken()}',
+        }
       );
 
       // Since the way the package works it always sends a POST first and our server doesn't support that, 
