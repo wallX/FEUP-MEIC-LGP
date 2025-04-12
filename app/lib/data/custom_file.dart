@@ -8,6 +8,9 @@ class CustomFile {
   final int size;	
   final XFile file;
   final VideoThumbnail thumbnail;
+  final double duration;
+  final int width;
+  final int height;
   TusClient? client;
   double progress;
   Duration estimate;
@@ -20,6 +23,9 @@ class CustomFile {
     required this.thumbnail,
     required this.progress,
     required this.estimate,
+    required this.duration,
+    required this.width,
+    required this.height,
     this.client,
     this.fileUrl,
   });
