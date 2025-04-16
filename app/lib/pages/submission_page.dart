@@ -15,6 +15,7 @@ import 'package:app/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:app/data/user.dart';
 import 'package:app/services/token_service.dart';
+import 'package:flutter_video_info/flutter_video_info.dart';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
@@ -92,24 +93,41 @@ class _SubmissionPageState extends State<SubmissionPage> {
     );
   }
 
-  // Function to select a video from the gallery
   Future<void> _selectVideoFromGallery() async {
     FilePickerResult? mediaFiles = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.video,
     );
+
     if (mediaFiles != null) {
       List<File> files = mediaFiles.paths.map((path) => File(path!)).toList();
-      setState(() {
-        _selectedFiles = files.map((file) => CustomFile(
+      List<CustomFile> customFiles = [];
+
+      for (File file in files) {
+        final metadata = await _extractVideoMetadata(file.path);
+
+        customFiles.add(CustomFile(
           name: file.path.split('/').last,
           size: file.lengthSync(),
           file: XFile(file.path),
-          thumbnail: VideoThumbnail(videoPath: file.path),
+          thumbnail: VideoThumbnail(
+            key: ValueKey(file.path),
+            videoPath: file.path,
+          ),
           progress: 0,
           estimate: Duration.zero,
-          
-        )).toList();
+          duration: metadata['duration'],
+          width: metadata['width'],
+          height: metadata['height'],
+          orientation: metadata['orientation'],
+          date: metadata['date'],
+          framerate: metadata['framerate'],
+          location: metadata['location'] ?? "",
+        ));
+      }
+
+      setState(() {
+        _selectedFiles = customFiles;
       });
     }
   }
@@ -170,15 +188,18 @@ class _SubmissionPageState extends State<SubmissionPage> {
     );
   }
 
-  Future<String?> _getUploadUrl(String fileName, int fileLength) async {
+  Future<String?> _getUploadUrl(CustomFile uploadFile) async {
     try {
       final response = await _apiService.dio.post(
         '/api/uploads',
         options: Options(
           headers: {
-            'file_name': fileName,
-            'file_length': fileLength.toString(),
+            'file_name': uploadFile.name,
+            'file_length': uploadFile.size,
             'journalist': _user.name,
+            'duration': uploadFile.duration,
+            'width': uploadFile.width,
+            'height': uploadFile.height,
           },
         ),
       );
@@ -208,7 +229,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
       // Get the address where we will upload the file
       String? uri = '';
       try {
-        uri = await _getUploadUrl(uploadFile.name, uploadFile.size);
+        uri = await _getUploadUrl(uploadFile);
         uri = uri?.replaceAll("localhost", "10.0.2.2"); // TODO: Fix this for production
       } catch (e) {
         throw Exception('Error getting upload URL: $e');
@@ -297,6 +318,26 @@ class _SubmissionPageState extends State<SubmissionPage> {
       },
     );
   }
+
+  Future<Map<String, dynamic>> _extractVideoMetadata(String filePath) async {
+    final videoInfo = FlutterVideoInfo();
+    final info = await videoInfo.getVideoInfo(filePath);
+
+    if (info == null) {
+      throw Exception('Failed to extract video metadata');
+    }
+
+    return {
+      'duration': (info.duration ?? 0) / 1000, // ms to seconds
+      'width': info.width ?? 0,
+      'height': info.height ?? 0,
+      'date': info.date ?? "",
+      'orientation': info.orientation ?? "",
+      'framerate': info.framerate ?? 0,
+      'location ': info.location  ?? "",
+    };
+  }
+
 
   @override
   void dispose() {
