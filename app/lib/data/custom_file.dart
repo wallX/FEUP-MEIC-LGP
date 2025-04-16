@@ -11,6 +11,10 @@ class CustomFile {
   final double duration;
   final int width;
   final int height;
+  final int orientation;
+  final String date;
+  final double framerate;
+  final String location;
   TusClient? client;
   double progress;
   Duration estimate;
@@ -26,6 +30,10 @@ class CustomFile {
     required this.duration,
     required this.width,
     required this.height,
+    required this.orientation,
+    required this.date,
+    required this.framerate,
+    required this.location,
     this.client,
     this.fileUrl,
   });

@@ -118,6 +118,10 @@ class _SubmissionPageState extends State<SubmissionPage> {
           duration: metadata['duration'],
           width: metadata['width'],
           height: metadata['height'],
+          orientation: metadata['orientation'],
+          date: metadata['date'],
+          framerate: metadata['framerate'],
+          location: metadata['location'] ?? "",
         ));
       }
 
@@ -325,6 +329,10 @@ class _SubmissionPageState extends State<SubmissionPage> {
       'duration': (info.duration ?? 0) / 1000, // ms to seconds
       'width': info.width ?? 0,
       'height': info.height ?? 0,
+      'date': info.date ?? "",
+      'orientation': info.orientation ?? "",
+      'framerate': info.framerate ?? 0,
+      'location ': info.location  ?? "",
     };
   }
 
