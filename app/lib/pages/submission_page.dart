@@ -144,7 +144,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
               });
 
               try {
-                await _uploadToTus();
+                await _uploadFiles();
               
                 // Visual feedback
                 final snackbar = SnackBar(
@@ -188,6 +188,31 @@ class _SubmissionPageState extends State<SubmissionPage> {
     );
   }
 
+  Future<void> _uploadFiles() async {
+    final tempDir = await getTemporaryDirectory();
+    
+    List<Future> uploads = [];
+
+    for (int i = 0; i < _selectedFiles.length; i++) {
+      CustomFile uploadFile = _selectedFiles[i];
+
+      // Get the address where we will upload the file
+      String? uri = '';
+      try {
+        uri = await _getUploadUrl(uploadFile);
+        uri = uri?.replaceAll("localhost", "10.0.2.2"); // TODO: Fix this for production
+      } catch (e) {
+        throw Exception('Error getting upload URL: $e');
+      }
+
+      uploads.add(_uploadToTus(uploadFile, uri, tempDir));
+
+    }
+
+    // Wait for all uploads to complete
+    await Future.wait(uploads);
+  }
+
   Future<String?> _getUploadUrl(CustomFile uploadFile) async {
     try {
       final response = await _apiService.dio.post(
@@ -217,76 +242,64 @@ class _SubmissionPageState extends State<SubmissionPage> {
       throw Exception('Error connecting to server: ${e.message}');
     }
   }
+  
 
-  Future<void> _uploadToTus() async {
-    final tempDir = await getTemporaryDirectory();
-    
-    List<Future> uploads = [];
-    
-    for (int i = 0; i < _selectedFiles.length; i++) {
-      CustomFile uploadFile = _selectedFiles[i];
+  Future<void> _uploadToTus(CustomFile uploadFile, String? uri, Directory tempDir) async {
 
-      // Get the address where we will upload the file
-      String? uri = '';
-      try {
-        uri = await _getUploadUrl(uploadFile);
-        uri = uri?.replaceAll("localhost", "10.0.2.2"); // TODO: Fix this for production
-      } catch (e) {
-        throw Exception('Error getting upload URL: $e');
-      }
-
-      // Create a temporary directory for this file
-      final tempDirectory = Directory('${tempDir.path}/${uploadFile.file.name}_upload');
-      if (!tempDirectory.existsSync()) {
-        tempDirectory.createSync(recursive: true);
-      }
-      
-      // TODO: Should use Dio to make it easier, but it isn't using bc the tusc package doesn't accept it
-      final tusClient = TusClient(
-        url: uri!, 
-        file: uploadFile.file,
-        chunkSize: 1.MB,
-        timeout: Duration(seconds: 30),
-        cache: TusPersistentCache(tempDirectory.path),
-        httpClient: httpClient,
-        headers: {
-          'Authorization': 'Bearer ${_user.tokens.getAccessToken()}',
-        }
-      );
-
-      // Since the way the package works it always sends a POST first and our server doesn't support that, 
-      // we need set the upload URL in the cache before calling startUpload so that the package thinks it's resuming an upload,
-      // therefore it will send a PATCH request instead of a POST
-      await tusClient.cache?.set(tusClient.fingerprint, uri);
-
-      uploads.add(tusClient.startUpload(
-        onProgress: (count, total, response) {
-          setState(() {
-            uploadFile.progress = count / total * 100;
-          });
-        },
-
-        onComplete: (response) {
-          setState(() {
-            uploadFile.progress = 100;
-          });
-          tempDirectory.deleteSync(recursive: true);
-        },
-
-        onError: (error) {
-          
-          throw Exception('Error uploading ${uploadFile.file.name}: $error');
-        },
-
-        onTimeout: () {
-          throw Exception('Timeout uploading ${uploadFile.file.name}');
-        }
-      ));
-
+    // Create a temporary directory for this file
+    final tempDirectory = Directory('${tempDir.path}/${uploadFile.file.name}_upload');
+    if (!tempDirectory.existsSync()) {
+      tempDirectory.createSync(recursive: true);
     }
+
+    final accessToken = await _user.tokens.getAccessToken();
     
-    // Wait for all uploads to complete
-    await Future.wait(uploads);
+    final tusClient = TusClient(
+      url: uri!, 
+      file: uploadFile.file,
+      chunkSize: 1.MB,
+      timeout: Duration(seconds: 30),
+      cache: TusPersistentCache(tempDirectory.path),
+      httpClient: httpClient,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      }
+    );
+
+    // Since the way the package works it always sends a POST first and our server doesn't support that, 
+    // we need set the upload URL in the cache before calling startUpload so that the package thinks it's resuming an upload,
+    // therefore it will send a PATCH request instead of a POST
+    await tusClient.cache?.set(tusClient.fingerprint, uri);
+
+    return (tusClient.startUpload(
+      onProgress: (count, total, response) {
+        setState(() {
+          uploadFile.progress = count / total * 100;
+        });
+      },
+
+      onComplete: (response) {
+        setState(() {
+          uploadFile.progress = 100;
+        });
+        tempDirectory.deleteSync(recursive: true);
+      },
+
+      onError: (error) {
+        _user.tokens.refreshTokensHttpClient().then((value) {
+          if (value) {
+            
+          } else {
+            throw Exception('Error uploading ${uploadFile.file.name}: $error');
+          }
+        });
+        //throw Exception('Error uploading ${uploadFile.file.name}: $error');
+      },
+
+      onTimeout: () {
+        throw Exception('Timeout uploading ${uploadFile.file.name}');
+      }
+    ));
   }
 
   void _showErrorDialog(String message) {

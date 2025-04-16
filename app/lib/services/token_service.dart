@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:app/services/api_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:http/http.dart' as http;
@@ -77,7 +76,7 @@ class TokenService {
       final response = await httpClient.post(
         uri,
         headers: {
-          'Authorization': 'Bearer ${token}',
+          'Authorization': 'Bearer $token',
           'Refresh-Token': refreshToken,
         }
       );
