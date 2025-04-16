@@ -284,15 +284,29 @@ class _SubmissionPageState extends State<SubmissionPage> {
         tempDirectory.deleteSync(recursive: true);
       },
 
-      onError: (error) {
-        _user.tokens.refreshTokensHttpClient().then((value) {
-          if (value) {
-            tusClient.resumeUpload();
-          } else {
-            throw Exception('Error uploading ${uploadFile.file.name}: $error');
+      onError: (error) async {
+        try {
+          if (error.toString().contains('401')) { // Token rejected
+
+            final refreshSuccess = await _user.tokens.refreshTokensHttpClient();
+            
+            if (refreshSuccess) {
+
+              final newAccessToken = await _user.tokens.getAccessToken();
+              
+              tusClient.headers['Authorization'] = 'Bearer $newAccessToken';
+            
+              tusClient.resumeUpload();
+              
+            }
           }
-        });
-        //throw Exception('Error uploading ${uploadFile.file.name}: $error');
+          else {
+            throw Exception('Error uploading ${uploadFile.file.name}: $error');
+          } 
+          
+        } catch (e) {
+          throw Exception('Error during upload retry: $e');
+        }
       },
 
       onTimeout: () {
