@@ -39,7 +39,6 @@ class _LoginPageState extends State<LoginPage> {
 
         // TODO: TEMPORARY BYPASS
         if(_emailController.text == "lgp"){
-          final ApiService apiService = ApiService(_tokenService);
           await _tokenService.saveTokens(
               accessToken: "123",
               refreshToken: "456",

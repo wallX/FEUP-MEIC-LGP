@@ -62,7 +62,9 @@ class TokenService {
       return false;
     }
   }
-
+  
+  /// Function to refresh tokens when using HttpClient instead of Dio
+  /// Simply saves the new tokens and returns True if successful
   Future<bool> refreshTokensHttpClient() async {
     try {
       var httpClient = http.Client();

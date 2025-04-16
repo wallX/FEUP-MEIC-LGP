@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:app/data/custom_file.dart';
 import 'package:app/manager/theme_manager.dart';
 import 'package:app/widgets/submission_page/upload_progress.dart';
-import 'dart:convert';
 
 class FileList extends StatelessWidget {
   final List<CustomFile> files;

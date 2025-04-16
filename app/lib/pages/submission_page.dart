@@ -14,7 +14,6 @@ import 'package:dio/dio.dart';
 import 'package:app/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:app/data/user.dart';
-import 'package:app/services/token_service.dart';
 import 'package:flutter_video_info/flutter_video_info.dart';
 
 class SubmissionPage extends StatefulWidget {
