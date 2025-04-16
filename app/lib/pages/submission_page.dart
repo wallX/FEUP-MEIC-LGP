@@ -15,6 +15,7 @@ import 'package:app/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:app/data/user.dart';
 import 'package:flutter_video_info/flutter_video_info.dart';
+import 'dart:async';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
@@ -189,7 +190,6 @@ class _SubmissionPageState extends State<SubmissionPage> {
 
   Future<void> _uploadFiles() async {
     final tempDir = await getTemporaryDirectory();
-    
     List<Future> uploads = [];
 
     for (int i = 0; i < _selectedFiles.length; i++) {
@@ -270,49 +270,67 @@ class _SubmissionPageState extends State<SubmissionPage> {
     // therefore it will send a PATCH request instead of a POST
     await tusClient.cache?.set(tusClient.fingerprint, uri);
 
-    return (tusClient.startUpload(
-      onProgress: (count, total, response) {
-        setState(() {
-          uploadFile.progress = count / total * 100;
-        });
-      },
+    // Completer to control when this function is complete
+    final completer = Completer<void>();
+  
+    void performUpload() {
+      tusClient.startUpload(
+        onProgress: (count, total, response) {
+          if (!completer.isCompleted) {
+            setState(() {
+              uploadFile.progress = count / total * 100;
+            });
+          }
+        },
 
-      onComplete: (response) {
-        setState(() {
-          uploadFile.progress = 100;
-        });
-        tempDirectory.deleteSync(recursive: true);
-      },
+        onComplete: (response) {
+          if (!completer.isCompleted) {
+            setState(() {
+              uploadFile.progress = 100;
+            });
+            tempDirectory.deleteSync(recursive: true);
+            completer.complete();
+          }
+        },
 
-      onError: (error) async {
-        try {
-          if (error.toString().contains('401')) { // Token rejected
-
-            final refreshSuccess = await _user.tokens.refreshTokensHttpClient();
-            
-            if (refreshSuccess) {
-
-              final newAccessToken = await _user.tokens.getAccessToken();
+        onError: (error) async {
+          if (error.toString().contains('401') && !completer.isCompleted) { // Token rejected
+            try {
+              final refreshSuccess = await _user.tokens.refreshTokensHttpClient();
               
-              tusClient.headers['Authorization'] = 'Bearer $newAccessToken';
-            
-              tusClient.resumeUpload();
-              
+              if (refreshSuccess) {
+                final newAccessToken = await _user.tokens.getAccessToken();
+                tusClient.headers['Authorization'] = 'Bearer $newAccessToken';
+                
+                // Retry the upload with new token
+                performUpload();
+                return;
+              }
+            } catch (refreshError) {
+              if (!completer.isCompleted) {
+                completer.completeError('Error refreshing token: $refreshError');
+              }
+              return;
             }
           }
-          else {
-            throw Exception('Error uploading ${uploadFile.file.name}: $error');
-          } 
-          
-        } catch (e) {
-          throw Exception('Error during upload retry: $e');
-        }
-      },
+          else if (!completer.isCompleted) {
+            completer.completeError('Error uploading ${uploadFile.file.name}: $error');
+          }
+        },
 
-      onTimeout: () {
-        throw Exception('Timeout uploading ${uploadFile.file.name}');
-      }
-    ));
+        onTimeout: () {
+          if (!completer.isCompleted) {
+            completer.completeError('Timeout while uploading ${uploadFile.file.name}');
+          }
+        }
+      );
+    }
+
+    // Start the initial upload
+    performUpload();
+    
+    // Return the Future from the completer
+    return completer.future;
   }
 
   void _showErrorDialog(String message) {
