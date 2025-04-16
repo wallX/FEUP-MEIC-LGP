@@ -288,7 +288,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
       onError: (error) {
         _user.tokens.refreshTokensHttpClient().then((value) {
           if (value) {
-            
+            tusClient.resumeUpload();
           } else {
             throw Exception('Error uploading ${uploadFile.file.name}: $error');
           }

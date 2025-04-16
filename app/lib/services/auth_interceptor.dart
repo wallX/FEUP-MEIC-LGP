@@ -23,13 +23,24 @@ class AuthInterceptor extends Interceptor {
 
       try {
         final success = await _tokenService.refreshTokens();
-        if (success) {
-          // Retry the original request with new token
+        if (success) { // Retry the original request with new token
+          
           final token = await _tokenService.getAccessToken();
+
+          final headers = Map<String, dynamic>.from(err.requestOptions.headers);
+          headers['Authorization'] = 'Bearer $token';
+
           final opts = Options(
             method: err.requestOptions.method,
-            headers: {'Authorization': 'Bearer $token'},
+            headers: headers,
+            followRedirects: err.requestOptions.followRedirects,
+            validateStatus: err.requestOptions.validateStatus,
+            receiveTimeout: err.requestOptions.receiveTimeout,
+            sendTimeout: err.requestOptions.sendTimeout,
+            contentType: err.requestOptions.contentType,
+            responseType: err.requestOptions.responseType,
           );
+
           final response = await _dio.request(
             err.requestOptions.path,
             options: opts,
