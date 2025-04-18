@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:app/data/custom_file.dart';
+import 'package:app/services/upload_service.dart';
 
 /// Class to manage the submission of videos in the app, so that by leaving the submission_page, videos won't be removed
 class SubmissionProvider extends ChangeNotifier {
   List<CustomFile> selectedFiles = [];
   //Set<String> selectedFilesSet = {};
   bool isUploading = false;
+  UploadService? _uploadService;
+
+  void uploadService(UploadService service) {
+    _uploadService = service;
+  }
+
+  bool get isUploadServiceInitialized {
+    return _uploadService != null;
+  }
 
   void setFiles(List<CustomFile> files) {
     selectedFiles = files;
@@ -46,5 +56,28 @@ class SubmissionProvider extends ChangeNotifier {
 
   bool isEmpty() {
     return selectedFiles.isEmpty;
+  }
+
+  // Update progress for a file
+  void updateFileProgress(CustomFile file, double progress) {
+    file.progress = progress;
+    notifyListeners();
+  }
+  
+  // Start the upload process
+  Future<void> startUpload() async {
+    if (_uploadService == null) {
+      throw Exception("Upload service not initialized");
+    }
+    
+    setUploading(true);
+    
+    try {
+      await _uploadService!.uploadFiles(selectedFiles, updateFileProgress);
+    } catch (e) {
+      rethrow;
+    } finally {
+      setUploading(false);
+    }
   }
 }
