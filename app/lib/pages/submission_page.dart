@@ -386,7 +386,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
   @override
   void dispose() {
     // Close the client when the page is disposed
-    //httpClient.close();
+    httpClient.close();
     super.dispose();
   }
 }
