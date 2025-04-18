@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/pages/submission_page.dart';
 import 'package:app/widgets/change_theme_button.dart';
 import 'package:app/manager/theme_manager.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,12 +33,13 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           // Logo
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(30.0),
-            child: Image(
-              image: AssetImage(
-                'lib/assets/logo.png',
-              ),
+            child: SvgPicture.asset(
+              'lib/assets/kr-logo.svg',
+              // Optional parameters for sizing
+              width: 150, // Adjust as needed
+              height: 150, // Adjust as needed
             ),
           ),
           // Submit Videos Button
