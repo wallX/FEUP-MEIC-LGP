@@ -32,4 +32,8 @@ class SubmissionProvider extends ChangeNotifier {
     isUploading = uploading;
     notifyListeners();
   }
+
+  bool isEmpty() {
+    return selectedFiles.isEmpty;
+  }
 }

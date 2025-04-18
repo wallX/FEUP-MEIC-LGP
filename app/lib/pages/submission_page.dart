@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:app/data/user.dart';
 import 'package:flutter_video_info/flutter_video_info.dart';
 import 'dart:async';
+import 'package:app/provider/submission_provider.dart';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
@@ -24,13 +25,12 @@ class SubmissionPage extends StatefulWidget {
 }
 
 class _SubmissionPageState extends State<SubmissionPage> {
-  List<CustomFile> _selectedFiles = [];
-  bool _isUploading = false;
 
   var httpClient = http.Client();
 
   late final ApiService _apiService;
   late final User _user;
+  late final SubmissionProvider _submissionProvider;
 
   @override
   void didChangeDependencies() {
@@ -38,6 +38,8 @@ class _SubmissionPageState extends State<SubmissionPage> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     _user = userProvider.user!; 
     _apiService = ApiService(_user.tokens);
+
+    _submissionProvider = Provider.of<SubmissionProvider>(context, listen: false);
   }
   
   @override
@@ -56,7 +58,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
 
   Widget _buildUI() {
     return Container(
-      child: _selectedFiles.isEmpty
+      child: _submissionProvider.isEmpty()
           ? Center( // Empty
               child: Text('No video selected', style: TextStyle(color: themeManager.theme.textColor)),
             )
@@ -65,11 +67,11 @@ class _SubmissionPageState extends State<SubmissionPage> {
               children: [
                 Expanded(
                   child: FileList(
-                    files: _selectedFiles,
-                    isUploading: _isUploading,
-                    onRemove: _isUploading ? null : (index) {
+                    files: _submissionProvider.selectedFiles,
+                    isUploading: _submissionProvider.isUploading,
+                    onRemove: _submissionProvider.isUploading ? null : (index) {
                       setState(() {
-                        _selectedFiles.removeAt(index);
+                        _submissionProvider.removeFile(index);
                       });
                     },
                   ),
@@ -87,7 +89,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
   // Widget to select a video from the gallery
   Widget _selectVideoFromGalleryButton() {
     return FloatingActionButton(
-      onPressed: _isUploading ? null : _selectVideoFromGallery,
+      onPressed: _submissionProvider.isUploading ? null : _selectVideoFromGallery,
       tooltip: 'Select video from gallery',
       child: const Icon(Icons.video_library),
     );
@@ -127,7 +129,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
       }
 
       setState(() {
-        _selectedFiles = customFiles;
+        _submissionProvider.selectedFiles = customFiles;
       });
     }
   }
@@ -135,12 +137,12 @@ class _SubmissionPageState extends State<SubmissionPage> {
   Widget _submitButton() {
     return ElevatedButton(
 
-      onPressed: _isUploading 
+      onPressed: _submissionProvider.isUploading 
           ? null 
           : () async {
 
               setState(() {
-                _isUploading = true;
+                _submissionProvider.setUploading(true);
               });
 
               try {
@@ -154,7 +156,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
                 
                 // Remove uploaded videos
                 setState(() {
-                  _selectedFiles = [];
+                  _submissionProvider.clearFiles();
                 });
               } catch (e) {
                 if (mounted) {
@@ -162,13 +164,13 @@ class _SubmissionPageState extends State<SubmissionPage> {
                 }
               } finally {
                 setState(() {
-                  _isUploading = false;
+                  _submissionProvider.setUploading(false);
                 });
               }
               
             },
 
-      child: _isUploading 
+      child: _submissionProvider.isUploading 
           ? Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -192,8 +194,8 @@ class _SubmissionPageState extends State<SubmissionPage> {
     final tempDir = await getTemporaryDirectory();
     List<Future> uploads = [];
 
-    for (int i = 0; i < _selectedFiles.length; i++) {
-      CustomFile uploadFile = _selectedFiles[i];
+    for (int i = 0; i < _submissionProvider.selectedFiles.length; i++) {
+      CustomFile uploadFile = _submissionProvider.selectedFiles[i];
 
       // Get the address where we will upload the file
       String? uri = '';
