@@ -76,13 +76,45 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - grafana-storage:/var/lib/grafana
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
     depends_on:
       - prometheus
     networks:
       - tusd-network
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    command:
+      - -nginx.scrape-uri=http://nginx/stub_status
+    ports:
+      - "9113:9113"
+    depends_on:
+      - nginx
+    networks:
+      - tusd-network
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    #image: zcube/cadvisor:latest
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    ports:
+      - "8083:8080"
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:ro
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    - /dev/disk/:/dev/disk:ro
+    #- /var/run/docker.sock:/var/run/docker.sock:rw
+    - /etc/machine-id:/etc/machine-id:ro
+    - /var/lib/dbus/machine-id:/var/lib/dbus/machine-id:ro
+    networks:
+      - mon-net
 networks:
   tusd-network:
     driver: bridge
-volumes:
-  grafana-storage:
+  mon-net:
+    driver: bridge
