@@ -63,6 +63,26 @@ services:
     ports:
       - "6379:6379"
     restart: always
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - tusd-network
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - tusd-network
 networks:
   tusd-network:
     driver: bridge
+volumes:
+  grafana-storage:
