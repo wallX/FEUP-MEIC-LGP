@@ -12,6 +12,8 @@ class UploadService {
   final ApiService _apiService;
   final User _user;
   final http.Client _httpClient = http.Client();
+  bool isPaused = false;
+  final List<TusClient> _tusClients  = [];
   
   UploadService(this._apiService, this._user);
   
@@ -93,6 +95,8 @@ class UploadService {
       }
     );
 
+    _tusClients.add(tusClient);
+
     // Set upload URL in cache before calling startUpload
     await tusClient.cache?.set(tusClient.fingerprint, uri);
 
@@ -159,6 +163,27 @@ class UploadService {
   }
   
   void dispose() {
-    _httpClient.close();
+    _tusClients.clear();
+  }
+
+  void pauseUpload() {
+    if (isPaused) {
+      for (final client in _tusClients) {
+        client.resumeUpload();
+      }
+      isPaused = false;
+    } else {
+      for (final client in _tusClients) {
+        client.pauseUpload();
+      }
+      isPaused = true;
+    }
+  }
+
+  void cancelUpload() {
+    for (final client in _tusClients) {
+      client.cancelUpload();
+    }
+    _tusClients.clear();
   }
 }

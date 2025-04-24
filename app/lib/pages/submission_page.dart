@@ -90,12 +90,14 @@ class _SubmissionPageState extends State<SubmissionPage> {
 
   // Widget to select a video from the gallery
   Widget _selectVideoFromGalleryButton() {
-    return FloatingActionButton(
+    return _submissionProvider.isUploading ? 
+      const SizedBox.shrink() :
+      FloatingActionButton(
       onPressed: _submissionProvider.isUploading ? null : _selectVideoFromGallery,
       tooltip: 'Select video from gallery',
       child: const Icon(Icons.video_library),
     );
-  }
+  } 
 
   Future<void> _selectVideoFromGallery() async {
     FilePickerResult? mediaFiles = await FilePicker.platform.pickFiles(
@@ -164,19 +166,73 @@ class _SubmissionPageState extends State<SubmissionPage> {
             },
 
       child: _submissionProvider.isUploading 
-          ? Row(
+          ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
+                Padding(
+                  padding: EdgeInsets.only(top: 12.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text('Uploading...'),
+                    ],
                   ),
                 ),
-                SizedBox(width: 8),
-                Text('Uploading...'),
+                
+                // Control buttons
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Pause button
+                    TextButton.icon(
+                      onPressed: () {
+                        _submissionProvider.pauseUpload();
+                      },
+                      icon: Icon(
+                        _submissionProvider.isPaused ? Icons.play_arrow : Icons.pause,
+                        color: Colors.white, 
+                        size: 16
+                      ),
+                      label: Text(
+                        _submissionProvider.isPaused ? 'Resume' : 'Pause', 
+                        style: TextStyle(color: Colors.white, fontSize: 12)
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size(60, 24),
+                      ),
+                    ),
+                    
+                    // Cancel button
+                    TextButton.icon(
+                      onPressed: () {
+                        _submissionProvider.cancelUpload();
+                      },
+                      icon: Icon(
+                        Icons.cancel, 
+                        color: Colors.white, 
+                        size: 16
+                      ),
+                      label: Text(
+                        'Cancel', 
+                        style: TextStyle(color: Colors.white, fontSize: 12)
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size(60, 24),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             )
           : const Text('Submit Videos'),

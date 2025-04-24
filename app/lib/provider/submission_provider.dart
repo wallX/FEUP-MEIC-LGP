@@ -80,4 +80,23 @@ class SubmissionProvider extends ChangeNotifier {
       setUploading(false);
     }
   }
+
+  void pauseUpload() {
+    if (_uploadService != null) {
+      _uploadService!.pauseUpload();
+    }
+  }
+
+  void cancelUpload() {
+    if (_uploadService != null) {
+      _uploadService!.cancelUpload();
+
+      clearFiles();
+      setUploading(false);
+    }
+  }
+
+  bool get isPaused {
+    return _uploadService != null && _uploadService!.isPaused;
+  }
 }
