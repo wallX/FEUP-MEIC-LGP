@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:app/data/custom_file.dart';
-import 'package:app/manager/theme_manager.dart';
 import 'package:app/widgets/submission_page/upload_progress.dart';
 
 class FileList extends StatelessWidget {
@@ -31,16 +30,15 @@ class FileList extends StatelessWidget {
                 children: [
                   Text(
                     '${file.name} - ${file.size} bytes',
-                    style: TextStyle(color: themeManager.theme.textColor),
                     ),
                   if (file.width != 0 && file.height != 0 && file.duration != 0) ...[
                     Text(
                       'Resolution: ${file.width}x${file.height}',
-                      style: TextStyle(color: themeManager.theme.textColor, fontSize: 12),
+                      style: TextStyle(fontSize: 12),
                     ),
                     Text(
                       'Duration: ${_formatDuration(file.duration)}',
-                      style: TextStyle(color: themeManager.theme.textColor, fontSize: 12),
+                      style: TextStyle(fontSize: 12),
                     ),
                   ],
                 ],

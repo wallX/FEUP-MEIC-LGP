@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:app/manager/theme_manager.dart';
+import 'package:provider/provider.dart';
+import 'package:app/provider/theme_provider.dart';
 
 class ChangeThemeButton extends StatelessWidget {
   const ChangeThemeButton({super.key});
   
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: themeManager,
-      builder: (context, _) {
+    // Use Consumer for cleaner approach to access ThemeProvider
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
         return Switch(
           key: const Key('change_theme_button'),
-          value: themeManager.theme.isDarkMode,
+          value: themeProvider.isDarkMode,
+          activeColor: Colors.blueAccent,
           onChanged: (bool value) {
-            themeManager.toggleTheme();
-          }
+            themeProvider.toggleTheme();
+          },
         );
       },
     );

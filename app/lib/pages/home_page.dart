@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/submission_page.dart';
 import 'package:app/widgets/change_theme_button.dart';
-import 'package:app/manager/theme_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,14 +14,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: themeManager,
-      builder: (context, child) {
-        return Scaffold(
-          backgroundColor: themeManager.theme.backgroundColor,
-          body: _buildUI(),
-        );
-      },
+    return Scaffold(
+      body: _buildUI(),
     );
   }
 

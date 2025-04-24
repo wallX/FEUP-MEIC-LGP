@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:app/widgets/submission_page/video/video_thumbnail.dart';
-import 'package:app/manager/theme_manager.dart';
 import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:app/data/custom_file.dart';
 import 'package:app/widgets/submission_page/file_list.dart';
@@ -43,20 +42,14 @@ class _SubmissionPageState extends State<SubmissionPage> {
   
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: themeManager,
-      builder: (context, child) {
-        return ListenableBuilder(
-          listenable: _submissionProvider,
-          builder: (context, _){
-          return Scaffold(
-            backgroundColor: themeManager.theme.backgroundColor,
-            body: _buildUI(),
-            floatingActionButton: _selectVideoFromGalleryButton(),
-          );
-          }
+    return ListenableBuilder(
+      listenable: _submissionProvider,
+      builder: (context, _){
+        return Scaffold(
+          body: _buildUI(),
+          floatingActionButton: _selectVideoFromGalleryButton(),
         );
-      },
+      }
     );
   }
 
@@ -64,7 +57,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
     return Container(
       child: _submissionProvider.isEmpty()
           ? Center( // Empty
-              child: Text('No video selected', style: TextStyle(color: themeManager.theme.textColor)),
+              child: Text('No video selected'),
             )
 
           : Column(
@@ -254,14 +247,11 @@ class _SubmissionPageState extends State<SubmissionPage> {
               child: Text('OK'),
             ),
           ],
-          backgroundColor: themeManager.theme.backgroundColor,
           titleTextStyle: TextStyle(
-            color: themeManager.theme.textColor,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
           contentTextStyle: TextStyle(
-            color: themeManager.theme.textColor,
             fontSize: 16,
           ),
         );

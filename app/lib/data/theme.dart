@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 
-// TODO: Update with more colors such as Primary Color, when the template is done
 class Theme {
   late Color backgroundColor;
   late Color textColor;
   
-  bool _isDarkMode = false;
+  bool isDarkMode = false;
   
-  bool get isDarkMode => _isDarkMode;
-  
-  set isDarkMode(bool value) {
-    _isDarkMode = value;
+  void toggleDarkMode(bool value) {
+    isDarkMode = value;
     _updateColors();
   }
 
-  Theme({bool isDarkMode = false}) {
-    _isDarkMode = isDarkMode;
+  Theme({bool darkMode = false}) {
+    isDarkMode = darkMode;
     _updateColors();
   }
   
   void _updateColors() {
-    if (_isDarkMode) {
+    if (isDarkMode) {
       backgroundColor = const Color.fromARGB(255, 32, 32, 32);
       textColor = const Color.fromARGB(255, 255, 250, 250);
     } else {
