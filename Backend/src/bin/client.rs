@@ -8,17 +8,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
 
     // Step 1: Initiate the upload
-    let file_path = "docker-compose.yaml";
+    let file_path = "video.mp4";
     let file_size = std::fs::metadata(file_path)?.len();
     let file_name = Path::new(file_path).file_name().unwrap().to_str().unwrap();
 
     println!("File size: {}", file_size);
+    
+    let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5YTgyM2RiZC0yNGYwLTRkZTEtYTBhMi0zOTQ4ZmU5YzUyMzAiLCJleHAiOjE3NDU1MDQ4NjQsInJvbGVzIjpbIkFkbWluIiwiVXNlciIsIk1vZGVyYXRvciJdfQ.ZpA9SCPQ19L3sAnstAolvGCs_uCZgFw80O09-XMPpvk";
 
     let response = client
         .post("http://localhost/api/uploads")
         //.post("http://localhost:8080/uploads")
         .header("file_name", file_name)
         .header("file_length", file_size.to_string())
+        .header("Authorization", &format!("Bearer {}", token))
         .send()
         .await?;
 
@@ -52,7 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .header("Content-Type", "application/offset+octet-stream")
             .header("Upload-Offset", offset.to_string())
             .header("Tus-Resumable", "1.0.0")
-            .header("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzZjQxZjA0Yi02NTBlLTQ4ZWUtOThmNi04NTA1ZmVlM2RmNWUiLCJleHAiOjE3NDM2ODk4MjcsInJvbGVzIjpbIkFkbWluIl19.ENcVEaCAVi5pCoKkW1wXzvBoKFuem49jqgIe0xr1nto")
+            .header("Authorization", &format!("Bearer {}", token))
             .body(chunk.to_vec())
             .send()
             .await?;
