@@ -6,6 +6,7 @@ import 'package:app/widgets/error_dialog.dart';
 import 'package:provider/provider.dart';
 import '../provider/user_provider.dart';
 import 'package:app/pages/register_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginPage extends StatefulWidget{
   const LoginPage({super.key});
@@ -23,6 +24,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   void _login() async{
     if (_formKey.currentState!.validate()) {
@@ -30,10 +32,6 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _isLoading = true;
       });
-
-      
-
-      
 
       try{
 
@@ -108,43 +106,80 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context){
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login Page Placeholder'),
-      ),
-      body: Padding(padding: 
-      const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              _buildEmailField(),
-              const SizedBox(height: 16.0),
-              _buildPasswordField(),
-              const SizedBox(height: 16.0),
-               _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _login,
-                    child: const Text('Login'),
-                  ),
-              const SizedBox(height: 16.0),
-              _registerButton()
-            ],
-          ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+        
+            buildLogo(),
+            const SizedBox(height: 20.0),
+            buildSeparatorLine(),
+            const SizedBox(height: 18.0),
+            buildWelcomeText(),
+        
+            _buildLoginForm(),
+            _buildForgotPassword(),
+            const SizedBox(height: 8.0),
+            _buildLoginButton(),
+            const SizedBox(height: 8.0),
+            _registerButton(),
+            const SizedBox(height: 2.0),
+            buildSeparatorLine(),
+            const SizedBox(height: 8.0),
+            _buildContinueWith(),
+        
+        
+          ],
         ),
       )
 
     );
   }
 
+  Widget buildLogo(){
+    return Padding(
+      padding: const EdgeInsets.only(top: 100.0),
+      child: SvgPicture.asset(
+        'lib/assets/kr-logo-text.svg',
+        width: 200,
+        height: 200,
+      ),
+    );
+  }
+
+  Widget buildSeparatorLine(){
+    return const Divider(
+      color: Colors.grey,
+      height: 15,
+      thickness: 0.7,
+      indent: 20,
+      endIndent: 20,
+    );
+  }
+
+  Widget buildWelcomeText(){
+    return const Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.only(left: 20.0), // Match the indent of the divider
+        child: Text(
+          'Welcome!',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmailField() {
     return TextFormField(
       controller: _emailController,
-      decoration: const InputDecoration(labelText: 'Email'),
+      decoration: const InputDecoration(labelText: 'Email Address'),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter your email';
@@ -160,8 +195,23 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildPasswordField() {
     return TextFormField(
       controller: _passwordController,
-      decoration: const InputDecoration(labelText: 'Password'),
-      obscureText: true,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: () {
+            setState(() {
+              _obscurePassword = !_obscurePassword;
+            });
+          },
+          tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+        ),
+      ),
+
+      obscureText: _obscurePassword,
+
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter your password';
@@ -171,15 +221,109 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _registerButton(){
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const RegisterPage()),
+  Widget _buildLoginForm() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            _buildEmailField(),
+            const SizedBox(height: 16.0),
+            _buildPasswordField(),
+            const SizedBox(height: 4.0)
+          ],
+        ),
+      )
+    );
+  }
+
+  // TODO: Implement forgot password functionality
+  Widget _buildForgotPassword(){
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton(
+            onPressed: () {}, 
+            child: Text(
+              'Forgot Password?',
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton(){
+    return _isLoading
+      ? const CircularProgressIndicator()
+      : ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(360, 50),
+          ),
+          onPressed: _login,
+          child: const Text('Login'),
         );
-      },
-      child: const Text('Register'),
+  }
+
+  Widget _registerButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "Don't have an account? ",
+            style: TextStyle(
+              color: Colors.grey.shade700,
+              fontSize: 14,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RegisterPage()),
+              );
+            },
+            child: Text(
+              "Sign Up",
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContinueWith(){
+    return Column(
+      children: [
+        Text(
+          'Or continue with',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey.shade700
+          ),
+        ),
+        GestureDetector(
+          onTap: () {},
+          child: Image.asset(
+            'lib/assets/logo.png',
+            width: 60,
+            height: 60, 
+          ),
+        ),
+      ],
     );
   }
 }

@@ -10,6 +10,8 @@ class ThemeProvider extends material.ChangeNotifier{
   bool get isDarkMode => _theme.isDarkMode;
   material.Color get backgroundColor => _theme.backgroundColor;
   material.Color get textColor => _theme.textColor;
+  material.Color get primaryColor => _theme.primaryColor;
+  material.Color get secondaryColor => _theme.secondaryColor;
 
   ThemeProvider() {
     initTheme();
@@ -30,6 +32,8 @@ class ThemeProvider extends material.ChangeNotifier{
 
   material.ThemeData getThemeData(){
     return material.ThemeData(
+      primaryColor: _theme.primaryColor,
+
       brightness: _theme.isDarkMode ? material.Brightness.dark : material.Brightness.light,
 
       scaffoldBackgroundColor: _theme.backgroundColor,
@@ -45,12 +49,12 @@ class ThemeProvider extends material.ChangeNotifier{
       ),
       
       textTheme: material.TextTheme(
-        bodyLarge: material.TextStyle(color: _theme.textColor),
-        bodyMedium: material.TextStyle(color: _theme.textColor),
+        bodyLarge: material.TextStyle(color: secondaryColor),
+        bodyMedium: material.TextStyle(color: secondaryColor),
         bodySmall: material.TextStyle(color: _theme.textColor),
 
-        titleLarge: material.TextStyle(color: _theme.textColor),
-        titleMedium: material.TextStyle(color: _theme.textColor),
+        titleLarge: material.TextStyle(color: secondaryColor),
+        titleMedium: material.TextStyle(color: secondaryColor),
         titleSmall: material.TextStyle(color: _theme.textColor),
 
         labelLarge: material.TextStyle(color: _theme.textColor),
@@ -66,6 +70,51 @@ class ThemeProvider extends material.ChangeNotifier{
         headlineSmall: material.TextStyle(color: _theme.textColor),
       ),
       
+      // Login / Register Boxes
+      inputDecorationTheme: material.InputDecorationTheme(
+        filled: true,
+        fillColor: _theme.isDarkMode ? material.Colors.grey[800] : material.Colors.white,
+
+        floatingLabelStyle: material.TextStyle(color: primaryColor), // Floating (focused) label color
+
+        border: material.OutlineInputBorder(
+          borderRadius: material.BorderRadius.circular(16),
+          borderSide: material.BorderSide(color: material.Colors.grey),
+        ),
+
+        enabledBorder: material.OutlineInputBorder(
+          borderRadius: material.BorderRadius.circular(16),
+          borderSide: material.BorderSide(color: material.Colors.grey.shade400),
+        ),
+
+        focusedBorder: material.OutlineInputBorder(
+          borderRadius: material.BorderRadius.circular(16),
+          borderSide: material.BorderSide(color: primaryColor, width: 2),
+        ),
+
+        errorBorder: material.OutlineInputBorder(
+          borderRadius: material.BorderRadius.circular(16),
+          borderSide: material.BorderSide(color: material.Colors.red, width: 1),
+        ),
+
+        suffixIconColor: material.Colors.grey,
+
+        contentPadding: material.EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+
+      // Button Theme
+      elevatedButtonTheme: material.ElevatedButtonThemeData(
+        style: material.ButtonStyle(
+          backgroundColor: material.WidgetStateProperty.all(primaryColor),
+          foregroundColor: material.WidgetStateProperty.all(material.Colors.white),
+          shape: material.WidgetStateProperty.all<material.RoundedRectangleBorder>(
+            material.RoundedRectangleBorder(
+              borderRadius: material.BorderRadius.circular(16),
+            ),
+          ),
+        ),
+      ),
+
       useMaterial3: true
     );
   }
