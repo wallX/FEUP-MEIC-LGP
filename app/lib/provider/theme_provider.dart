@@ -115,6 +115,15 @@ class ThemeProvider extends material.ChangeNotifier{
         ),
       ),
 
+      // Bottom Navigation Bar
+      bottomNavigationBarTheme: material.BottomNavigationBarThemeData(
+        backgroundColor: _theme.backgroundColor,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: secondaryColor,
+        selectedLabelStyle: material.TextStyle(fontWeight: material.FontWeight.bold),
+        unselectedLabelStyle: material.TextStyle(color: secondaryColor),
+      ),
+
       useMaterial3: true
     );
   }

@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
-          title: 'LGP-16 App Demo',
+          title: 'Kwik Report',
           theme: themeProvider.getThemeData(),
           home: const MainPage(),
         );
