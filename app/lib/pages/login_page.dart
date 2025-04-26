@@ -6,7 +6,7 @@ import 'package:app/widgets/error_dialog.dart';
 import 'package:provider/provider.dart';
 import '../provider/user_provider.dart';
 import 'package:app/pages/register_page.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:app/widgets/logo.dart';
 
 class LoginPage extends StatefulWidget{
   const LoginPage({super.key});
@@ -113,8 +113,9 @@ class _LoginPageState extends State<LoginPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-        
-            buildLogo(),
+            
+            const SizedBox(height: 100.0),
+            Logo(logoType: 0, width: 200, height: 200),
             const SizedBox(height: 20.0),
             buildSeparatorLine(),
             const SizedBox(height: 18.0),
@@ -136,17 +137,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
       )
 
-    );
-  }
-
-  Widget buildLogo(){
-    return Padding(
-      padding: const EdgeInsets.only(top: 100.0),
-      child: SvgPicture.asset(
-        'lib/assets/kr-logo-text.svg',
-        width: 200,
-        height: 200,
-      ),
     );
   }
 

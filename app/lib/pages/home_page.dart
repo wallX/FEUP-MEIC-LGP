@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/submission_page.dart';
 import 'package:app/widgets/change_theme_button.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:app/widgets/logo.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,35 +20,37 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildUI() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 100.0),
+    return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
+    
           // Logo
-          Padding(
-            padding: EdgeInsets.all(30.0),
-            child: SvgPicture.asset(
-              'lib/assets/kr-logo.svg',
-              // Optional parameters for sizing
-              width: 150, // Adjust as needed
-              height: 150, // Adjust as needed
-            ),
-          ),
+          const SizedBox(height: 100.0),
+          Logo(logoType: 0, width: 200, height: 200),
+          const SizedBox(height: 100.0),
+    
           // Submit Videos Button
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SubmissionPage()),
-              );
-            },
-            child: const Text('Submit Videos'),
-          ),
+          _submitVideosButton(),
+    
           // Change theme switch
           const ChangeThemeButton(),
         ],
       ),
+    );
+  }
+
+  Widget _submitVideosButton() {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SubmissionPage()),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+            minimumSize: const Size(360, 50),
+          ),
+      child: const Text('Submit Videos'),
     );
   }
 }
