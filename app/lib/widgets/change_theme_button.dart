@@ -13,7 +13,12 @@ class ChangeThemeButton extends StatelessWidget {
         return Switch(
           key: const Key('change_theme_button'),
           value: themeProvider.isDarkMode,
-          activeColor: Colors.blueAccent,
+          activeColor: themeProvider.primaryColor,
+          inactiveTrackColor: themeProvider.secondaryColor,
+          inactiveThumbColor: Colors.white,
+          inactiveThumbImage: const AssetImage('lib/assets/sun-icon.png'), 
+          activeThumbImage: const AssetImage('lib/assets/moon-icon.png'),
+          trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
           onChanged: (bool value) {
             themeProvider.toggleTheme();
           },
