@@ -20,21 +20,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildUI() {
-    return Center(
-      child: Column(
-        children: [
-    
-          const SizedBox(height: 100.0),
-          Logo(logoType: 0, width: 200, height: 200),
-          const SizedBox(height: 100.0),
-          _recordVideoButton(),
-          const SizedBox(height: 15.0),
-          _buildSeparatorLine(),
-          const SizedBox(height: 15.0),
-          _submitVideosButton(),
-
-          const ChangeThemeButton(),
-        ],
+    return SingleChildScrollView(
+      child: Center(
+        child: Column(
+          children: [
+      
+            const SizedBox(height: 100.0),
+            Logo(logoType: 0, width: 200, height: 200),
+            const SizedBox(height: 100.0),
+            _recordVideoButton(),
+            const SizedBox(height: 15.0),
+            _buildSeparatorLine(),
+            const SizedBox(height: 15.0),
+            _submitVideosButton(),
+      
+            const ChangeThemeButton(),
+          ],
+        ),
       ),
     );
   }
