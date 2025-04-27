@@ -54,29 +54,32 @@ class _SubmissionPageState extends State<SubmissionPage> {
   }
 
   Widget _buildUI() {
-    return Container(
-      child: _submissionProvider.isEmpty()
-          ? Center( // Empty
-              child: Text('No video selected'),
-            )
-
-          : Column(
-              children: [
-                Expanded(
-                  child: FileList(
-                    files: _submissionProvider.selectedFiles,
-                    isUploading: _submissionProvider.isUploading,
-                    onRemove: _submissionProvider.isUploading ? null : (index) {
-                      _submissionProvider.removeFile(index);
-                    },
+    return Scaffold(
+      appBar: AppBar(),
+      body: Container(
+        child: _submissionProvider.isEmpty()
+            ? Center( // Empty
+                child: Text('No video selected'),
+              )
+      
+            : Column(
+                children: [
+                  Expanded(
+                    child: FileList(
+                      files: _submissionProvider.selectedFiles,
+                      isUploading: _submissionProvider.isUploading,
+                      onRemove: _submissionProvider.isUploading ? null : (index) {
+                        _submissionProvider.removeFile(index);
+                      },
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _submitButton(),
-                ),
-              ],
-            ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _submitButton(),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 

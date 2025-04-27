@@ -1,3 +1,4 @@
+import 'package:app/pages/record_page.dart';
 import 'package:flutter/material.dart';
 import 'package:app/pages/submission_page.dart';
 import 'package:app/widgets/change_theme_button.dart';
@@ -46,7 +47,7 @@ class _HomePageState extends State<HomePage> {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SubmissionPage()),
+          MaterialPageRoute(builder: (context) => const RecordPage()),
         );
       },
       style: ElevatedButton.styleFrom(
