@@ -6,15 +6,17 @@ use std::path::Path;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
-
-    // Step 1: Initiate the upload
-    let file_path = "video.mp4";
+    let args: Vec<String> = std::env::args().collect();
+    let file_path = args.get(1).map(|s| s.as_str()).unwrap_or("video.mp4");
+    let token = args.get(2).map(|s| s.as_str()).unwrap_or("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5YTgyM2RiZC0yNGYwLTRkZTEtYTBhMi0zOTQ4ZmU5YzUyMzAiLCJleHAiOjE3NDU1MDQ4NjQsInJvbGVzIjpbIkFkbWluIiwiVXNlciIsIk1vZGVyYXRvciJdfQ.ZpA9SCPQ19L3sAnstAolvGCs_uCZgFw80O09-XMPpvk");
+    
+    println!("File path: {}", file_path);
+    println!("Token: {}", token);
+    
     let file_size = std::fs::metadata(file_path)?.len();
     let file_name = Path::new(file_path).file_name().unwrap().to_str().unwrap();
-
     println!("File size: {}", file_size);
     
-    let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5YTgyM2RiZC0yNGYwLTRkZTEtYTBhMi0zOTQ4ZmU5YzUyMzAiLCJleHAiOjE3NDU1MDQ4NjQsInJvbGVzIjpbIkFkbWluIiwiVXNlciIsIk1vZGVyYXRvciJdfQ.ZpA9SCPQ19L3sAnstAolvGCs_uCZgFw80O09-XMPpvk";
 
     let response = client
         .post("http://localhost/api/uploads")
