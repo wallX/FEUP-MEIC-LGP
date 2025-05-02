@@ -51,4 +51,4 @@ services:
       - mon-net
 networks:
   mon-net:
-    external: true
+    driver: bridge
