@@ -261,7 +261,7 @@ class _RecordPageState extends State<RecordPage> {
     }
 
     try {
-      await _controller.stopVideoRecording();
+      XFile video = await _controller.stopVideoRecording();
       setState(() {
         _isRecording = false;
       });
