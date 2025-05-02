@@ -76,6 +76,13 @@ class _RecordPageState extends State<RecordPage> {
   @override
   void dispose() {
     _controller.dispose();
+    _cameras.clear();
+    _isInitialized = false;
+    _isRecording = false;
+    _minAvailableZoom = 1.0;
+    _maxAvailableZoom = 1.0;
+    _currentZoom = 1.0;
+    _baseZoom = 1.0;
     super.dispose();
   }
 
@@ -100,7 +107,7 @@ class _RecordPageState extends State<RecordPage> {
     return AppBar(
       backgroundColor: Colors.transparent,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
         onPressed: () => Navigator.of(context).pop(),
       ),
     );
@@ -149,7 +156,7 @@ class _RecordPageState extends State<RecordPage> {
           Text(
             'Recording',
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
