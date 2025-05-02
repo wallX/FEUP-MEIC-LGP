@@ -37,12 +37,11 @@ class _RecordPageState extends State<RecordPage> {
         return;
       }
 
-      debugPrint('DEBUG | Available cameras: $_cameras');
       final camera = _cameras.first;
 
       _controller = CameraController(
         camera,
-        ResolutionPreset.high,
+        ResolutionPreset.max,
         enableAudio: true,
       );
       await _controller.initialize().then((_) async {
@@ -91,7 +90,6 @@ class _RecordPageState extends State<RecordPage> {
       body: Column(
         children: [
           _buildCameraPreview(),
-          const SizedBox(height: 20),
           _buildRecordingControls(),
         ],
       ),
@@ -123,7 +121,7 @@ class _RecordPageState extends State<RecordPage> {
 
   Widget _buildRecordingControls() {
     return Positioned(
-      bottom: 0,
+      bottom: 50,
       left: 0,
       right: 0,
       child: Column(
@@ -276,9 +274,6 @@ class _RecordPageState extends State<RecordPage> {
     
     try {
       await _controller.setZoomLevel(zoom);
-      if (mounted) {
-        debugPrint('DEBUG | Zoom level set to: $zoom');
-      }
       setState(() {
         _currentZoom = zoom;
       });
