@@ -13,4 +13,4 @@ runAll:
 # Stop services
 stop:
 	@echo "Stopping services..."
-	docker-compose down
+	docker-compose stop
