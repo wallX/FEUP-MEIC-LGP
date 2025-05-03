@@ -42,8 +42,8 @@ class _LoginPageState extends State<LoginPage> {
               refreshToken: "456",
             );
           final user = User(
-              name: "PLACEHOLDER", //response.data['name'],
-              email: _emailController.text,
+              name: "LGP", //response.data['name'],
+              email: "${_emailController.text}@mail.com",
               userType: UserType.journalist, //response.data['user_type'],
               tokens: _tokenService,
               stations: null, //response.data['stations'],
