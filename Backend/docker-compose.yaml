@@ -65,17 +65,43 @@ services:
     ports:
       - "6379:6379"
     restart: always
-  video-worker:
+  transcription-worker:
     build:
-      context: ./python_worker
-      dockerfile: python_worker.Dockerfile
+      context: ./transcription_worker
+      dockerfile: transcription_worker.Dockerfile
     depends_on:
       - redis
     networks:
       - tusd-network
     volumes:
       - ./uploads:/app/uploads
-      - ./python_worker:/app
+      - ./transcription_worker:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+  caption-worker:
+    build:
+      context: ./caption_worker
+      dockerfile: caption_worker.Dockerfile
+    depends_on:
+      - redis
+    networks:
+      - tusd-network
+    volumes:
+      - ./uploads:/app/uploads
+      - ./caption_worker:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+  description-worker:
+    build:
+      context: ./description_worker
+      dockerfile: description_worker.Dockerfile
+    depends_on:
+      - redis
+    networks:
+      - tusd-network
+    volumes:
+      - ./uploads:/app/uploads
+      - ./description_worker:/app
     environment:
       - PYTHONUNBUFFERED=1
 networks:

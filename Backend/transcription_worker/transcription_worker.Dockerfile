@@ -18,7 +18,7 @@ RUN pip install redis --no-cache-dir
 WORKDIR /app
 
 # Add your Python script
-COPY video_worker.py .
+COPY transcription_worker.py .
 
 # Define entrypoint
-ENTRYPOINT ["python", "video_worker.py"]
+ENTRYPOINT ["python", "transcription_worker.py"]
