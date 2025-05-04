@@ -1,11 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app/provider/user_provider.dart';
-import 'package:app/provider/theme_provider.dart';
 import 'package:app/widgets/change_theme_button.dart';
-import 'package:app/widgets/profile_page/image_options_dialog.dart';
+import 'package:app/widgets/profile_page/profile_header.dart';
 import 'package:app/widgets/profile_page/logout_confirmation_dialog.dart';
 import 'package:app/widgets/profile_page/delete_account_dialog.dart';
 
@@ -18,20 +17,23 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   File? _profileImage;
+  String? _loadedEmail;
 
   @override
-  void initState() {
-    super.initState();
-    _loadProfileImage();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final user = context.read<UserProvider>().user;
+    if (user != null && user.email != _loadedEmail) {
+      _loadedEmail = user.email;
+      _restoreProfileImage(user.email);
+    }
   }
 
-  Future<void> _loadProfileImage() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String userEmail = context.read<UserProvider>().user?.email ?? '';
+  Future<void> _restoreProfileImage(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedPath = prefs.getString('$email-profileImagePath');
 
-    String? storedPath = prefs.getString('$userEmail-profileImagePath');
-
-    if (storedPath != null) {
+    if (storedPath != null && File(storedPath).existsSync()) {
       setState(() {
         _profileImage = File(storedPath);
       });
@@ -41,76 +43,39 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Consumer<ThemeProvider>(
-          builder: (context, themeProvider, _) {
-            return AppBar(
-              backgroundColor: themeProvider.backgroundColor,
-              iconTheme: IconThemeData(color: themeProvider.textColor),
-            );
-          },
-        ),
-      ),
+      appBar: AppBar(),
       body: Consumer<UserProvider>(
-        builder: (context, userProvider, child) {
-          final user = userProvider.user;
+        builder: (context, userProvider, _) {
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 26),
+            padding: const EdgeInsets.symmetric(horizontal: 26),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _profilePicture(),
-                const SizedBox(height: 12),
-                Consumer<ThemeProvider>(
-                  builder: (context, themeProvider, _) {
-                    return Text(
-                      user?.name ?? 'N/A',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: themeProvider.textColor,
-                      ),
-                    );
+                const SizedBox(height: 16),
+                ProfileHeader(
+                  profileImage: _profileImage,
+                  onImageSelected: (newImage) {
+                    setState(() {
+                      _profileImage = newImage;
+                    });
                   },
                 ),
-                Text(
-                  '${user?.email ?? 'N/A'}',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
                 const SizedBox(height: 40),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 16),
-                  title: const Text('Theme', style: TextStyle(fontSize: 16)),
+                _buildSettingsTile(
+                  title: 'Theme',
                   trailing: const ChangeThemeButton(),
                 ),
                 const Divider(),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 16),
-                  title: const Text('Log out', style: TextStyle(fontSize: 16)),
+                _buildSettingsTile(
+                  title: 'Log out',
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return const LogoutConfirmationDialog();
-                      },
-                    );
-                  },
+                  onTap: () => _showDialog(const LogoutConfirmationDialog()),
                 ),
                 const Divider(),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 16),
-                  title: const Text('Delete account', style: TextStyle(fontSize: 16)),
+                _buildSettingsTile(
+                  title: 'Delete account',
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return const DeleteAccountDialog();
-                      },
-                    );
-                  },
+                  onTap: () => _showDialog(const DeleteAccountDialog()),
                 ),
               ],
             ),
@@ -120,71 +85,20 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _profilePicture() {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, _) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 30.0),
-              child: Text(
-                "Profile",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: themeProvider.textColor,
-                ),
-              ),
-            ),
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(42),
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: _profileImage != null
-                            ? FileImage(_profileImage!)
-                            : const AssetImage('lib/assets/avatar.png') as ImageProvider,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: CircleAvatar(
-                    radius: 16,
-                    backgroundColor: const Color(0xFFF16912),
-                    child: IconButton(
-                      icon: const Icon(Icons.edit, size: 16, color: Colors.white),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return ImageOptionsDialog(
-                              profileImage: _profileImage,
-                              onImageSelected: (newImage) {
-                                setState(() {
-                                  _profileImage = newImage;
-                                });
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
+  Widget _buildSettingsTile({
+    required String title,
+    required Widget trailing,
+    VoidCallback? onTap,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Text(title, style: const TextStyle(fontSize: 16)),
+      trailing: trailing,
+      onTap: onTap,
     );
+  }
+
+  void _showDialog(Widget dialog) {
+    showDialog(context: context, builder: (_) => dialog);
   }
 }

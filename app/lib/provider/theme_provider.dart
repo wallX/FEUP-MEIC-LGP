@@ -2,15 +2,20 @@ import 'package:flutter/material.dart' as material;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app/data/theme.dart';
 
-class ThemeProvider extends material.ChangeNotifier{
+class ThemeProvider extends material.ChangeNotifier {
   late SharedPreferences prefs;
   final Theme _theme = Theme();
+
   Theme get theme => _theme;
 
   bool get isDarkMode => _theme.isDarkMode;
+
   material.Color get backgroundColor => _theme.backgroundColor;
+
   material.Color get textColor => _theme.textColor;
+
   material.Color get primaryColor => _theme.primaryColor;
+
   material.Color get secondaryColor => _theme.secondaryColor;
 
   ThemeProvider() {
@@ -30,11 +35,14 @@ class ThemeProvider extends material.ChangeNotifier{
     notifyListeners();
   }
 
-  material.ThemeData getThemeData(){
+  material.ThemeData getThemeData() {
     return material.ThemeData(
       primaryColor: _theme.primaryColor,
 
-      brightness: _theme.isDarkMode ? material.Brightness.dark : material.Brightness.light,
+      brightness:
+          _theme.isDarkMode
+              ? material.Brightness.dark
+              : material.Brightness.light,
 
       scaffoldBackgroundColor: _theme.backgroundColor,
 
@@ -45,9 +53,8 @@ class ThemeProvider extends material.ChangeNotifier{
         iconTheme: material.IconThemeData(color: _theme.textColor),
         actionsIconTheme: material.IconThemeData(color: _theme.textColor),
         toolbarTextStyle: material.TextStyle(color: _theme.textColor),
-
       ),
-      
+
       textTheme: material.TextTheme(
         bodyLarge: material.TextStyle(color: secondaryColor),
         bodyMedium: material.TextStyle(color: secondaryColor),
@@ -69,14 +76,18 @@ class ThemeProvider extends material.ChangeNotifier{
         headlineMedium: material.TextStyle(color: _theme.textColor),
         headlineSmall: material.TextStyle(color: _theme.textColor),
       ),
-      
+
       // Login / Register Boxes
       inputDecorationTheme: material.InputDecorationTheme(
         filled: true,
-        fillColor: _theme.isDarkMode ? material.Colors.grey[800] : material.Colors.white,
+        fillColor:
+            _theme.isDarkMode
+                ? material.Colors.grey[800]
+                : material.Colors.white,
 
-        floatingLabelStyle: material.TextStyle(color: primaryColor), // Floating (focused) label color
+        floatingLabelStyle: material.TextStyle(color: primaryColor),
 
+        // Floating (focused) label color
         border: material.OutlineInputBorder(
           borderRadius: material.BorderRadius.circular(16),
           borderSide: material.BorderSide(color: material.Colors.grey),
@@ -99,15 +110,21 @@ class ThemeProvider extends material.ChangeNotifier{
 
         suffixIconColor: material.Colors.grey,
 
-        contentPadding: material.EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: material.EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
 
       // Button Theme
       elevatedButtonTheme: material.ElevatedButtonThemeData(
         style: material.ButtonStyle(
           backgroundColor: material.WidgetStateProperty.all(primaryColor),
-          foregroundColor: material.WidgetStateProperty.all(material.Colors.white),
-          shape: material.WidgetStateProperty.all<material.RoundedRectangleBorder>(
+          foregroundColor: material.WidgetStateProperty.all(
+            material.Colors.white,
+          ),
+          shape: material
+              .WidgetStateProperty.all<material.RoundedRectangleBorder>(
             material.RoundedRectangleBorder(
               borderRadius: material.BorderRadius.circular(16),
             ),
@@ -120,11 +137,40 @@ class ThemeProvider extends material.ChangeNotifier{
         backgroundColor: _theme.backgroundColor,
         selectedItemColor: primaryColor,
         unselectedItemColor: secondaryColor,
-        selectedLabelStyle: material.TextStyle(fontWeight: material.FontWeight.bold),
+        selectedLabelStyle: material.TextStyle(
+          fontWeight: material.FontWeight.bold,
+        ),
         unselectedLabelStyle: material.TextStyle(color: secondaryColor),
       ),
 
-      useMaterial3: true
+      // Profile Dialogs
+      dialogTheme: material.DialogTheme(
+        backgroundColor: backgroundColor,
+        shape: material.RoundedRectangleBorder(
+          borderRadius: material.BorderRadius.circular(16),
+        ),
+        titleTextStyle: material.TextStyle(
+          fontWeight: material.FontWeight.bold,
+          fontSize: 20,
+          color: textColor
+        ),
+      ),
+
+      outlinedButtonTheme: material.OutlinedButtonThemeData(
+        style: material.ButtonStyle(
+          side: material.WidgetStateProperty.all(
+            material.BorderSide(color: primaryColor, width: 2),
+          ),
+          foregroundColor: material.WidgetStateProperty.all(primaryColor),
+          shape: material.WidgetStateProperty.all(
+            material.RoundedRectangleBorder(
+              borderRadius: material.BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
+
+      useMaterial3: true,
     );
   }
 }
