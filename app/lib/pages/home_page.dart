@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/submission_page.dart';
-import 'package:app/widgets/change_theme_button.dart';
 import 'package:app/widgets/logo.dart';
 
 class HomePage extends StatefulWidget {
@@ -11,12 +10,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _buildUI(),
-    );
+    return Scaffold(body: _buildUI());
   }
 
   Widget _buildUI() {
@@ -24,7 +20,6 @@ class _HomePageState extends State<HomePage> {
       child: Center(
         child: Column(
           children: [
-      
             const SizedBox(height: 100.0),
             Logo(logoType: 0, width: 200, height: 200),
             const SizedBox(height: 100.0),
@@ -33,8 +28,6 @@ class _HomePageState extends State<HomePage> {
             _buildSeparatorLine(),
             const SizedBox(height: 15.0),
             _submitVideosButton(),
-      
-            const ChangeThemeButton(),
           ],
         ),
       ),
@@ -50,17 +43,16 @@ class _HomePageState extends State<HomePage> {
         );
       },
       style: ElevatedButton.styleFrom(
-            minimumSize: const Size(360, 50),
-            textStyle: const TextStyle(
-              inherit: true,
-              fontSize: 18,
-              fontWeight: FontWeight.bold
-            ),
-          ),
+        minimumSize: const Size(360, 50),
+        textStyle: const TextStyle(
+          inherit: true,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       child: const Text('Record Video'),
     );
   }
-
 
   Widget _submitVideosButton() {
     return ElevatedButton(
@@ -71,18 +63,18 @@ class _HomePageState extends State<HomePage> {
         );
       },
       style: ElevatedButton.styleFrom(
-            minimumSize: const Size(360, 50),
-            textStyle: const TextStyle(
-              inherit: true,
-              fontSize: 18,
-              fontWeight: FontWeight.bold
-            ),
-          ),
+        minimumSize: const Size(360, 50),
+        textStyle: const TextStyle(
+          inherit: true,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       child: const Text('Submit Videos'),
     );
   }
 
-  Widget _buildSeparatorLine(){
+  Widget _buildSeparatorLine() {
     return const Divider(
       color: Colors.grey,
       height: 15,
