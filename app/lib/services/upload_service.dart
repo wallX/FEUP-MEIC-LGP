@@ -166,10 +166,13 @@ class UploadService {
     _tusClients.clear();
   }
 
-  void pauseUpload() {
+  void pauseUpload() async {
     if (isPaused) {
       for (final client in _tusClients) {
-        client.resumeUpload();
+        if (await client.canResume()) {
+          client.resumeUpload();
+        }
+        
       }
       isPaused = false;
     } else {
