@@ -6,6 +6,8 @@
 	<string>Capture videos</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Capture video audio</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>To enable GPS location access for Exif data</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
