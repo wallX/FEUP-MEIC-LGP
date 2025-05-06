@@ -1,11 +1,8 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:app/widgets/error_dialog.dart';
-import 'package:app/data/custom_file.dart';
 import 'package:provider/provider.dart';
 import 'package:app/provider/submission_provider.dart';
-import 'package:cross_file/cross_file.dart' show XFile;
-
+import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 
 
 class RecordPage extends StatefulWidget {
@@ -16,291 +13,77 @@ class RecordPage extends StatefulWidget {
 }
 
 class _RecordPageState extends State<RecordPage> {
-  late final List<CameraDescription> _cameras;
-  late SubmissionProvider _submissionProvider;
-  late CameraController _controller;
-  bool _isInitialized = false;
-  bool _isRecording = false;
-  double _minAvailableZoom = 1.0;
-  double _maxAvailableZoom = 1.0;
-  double _currentZoom = 1.0;
-  double _baseZoom = 1.0;
-  
-
-  Future<void> _initializeCamera() async {
-    try {
-      _cameras = await availableCameras();
-
-      if (_cameras.isEmpty) {
-        if(mounted) {
-          ErrorDialog.show(
-            context: context,
-            message: 'No cameras available',
-            title: 'Camera Error',
-          );
-        }
-        return;
-      }
-
-      final camera = _cameras.first;
-
-      _controller = CameraController(
-        camera,
-        ResolutionPreset.max,
-        enableAudio: true,
-      );
-      await _controller.initialize().then((_) async {
-        if (mounted) {
-          await _controller.prepareForVideoRecording();
-          _minAvailableZoom = await _controller.getMinZoomLevel();
-          _maxAvailableZoom = await _controller.getMaxZoomLevel();
-          setState(() {  
-            _isInitialized = true;
-          });
-        }
-      });
-    } on Exception catch (e) {
-      if(mounted) {
-        if (e is CameraException) {
-          ErrorDialog.show(
-            context: context,
-            message: 'Error initializing camera: $e',
-            title: 'Camera Error',
-          );
-        }
-      }
-    }
-  }
+  //late SubmissionProvider _submissionProvider;
 
   @override
   void initState() {
     super.initState();
-    _submissionProvider = Provider.of<SubmissionProvider>(context, listen: false);
-    _initializeCamera();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _cameras.clear();
-    _isInitialized = false;
-    _isRecording = false;
-    _minAvailableZoom = 1.0;
-    _maxAvailableZoom = 1.0;
-    _currentZoom = 1.0;
-    _baseZoom = 1.0;
-    super.dispose();
+    //_submissionProvider = Provider.of<SubmissionProvider>(context, listen: false);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isInitialized) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     return Scaffold(
-      appBar: _buildTransparentArrowBack(),
-      body: Column(
-        children: [
-          _buildCameraPreview(),
-          _buildRecordingControls(),
-        ],
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildTransparentArrowBack(){
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-    );
-  }
-
-  Widget _buildCameraPreview() {
-    return GestureDetector(
-      onScaleStart: (details) {
-        _baseZoom = _currentZoom;
-      },
-      onScaleUpdate: (details) {
-        _setZoomLevel(_baseZoom * details.scale);
-      },
-      child: CameraPreview(_controller),
-    );
-  }
-
-
-  Widget _buildRecordingControls() {
-    return Positioned(
-      bottom: 50,
-      left: 0,
-      right: 0,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-
-          if (_isRecording) _buildIsRecordingText(),
-          _buildZoomControls(),
-          const SizedBox(height: 20),
-          _buildToggleRecordingButton(),
-          
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIsRecordingText(){
-    return const Padding(
-      padding: EdgeInsets.only(bottom: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.circle, color: Colors.red, size: 12),
-          SizedBox(width: 8),
-          Text(
-            'Recording',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+      body: CameraAwesomeBuilder.awesome(
+        saveConfig: SaveConfig.video(
+          videoOptions: VideoOptions(
+            enableAudio: true,
+            ios: CupertinoVideoOptions(
+              fps: 10,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildToggleRecordingButton() {
-    return GestureDetector(
-      onTap: _isRecording ? _stopRecording : _startRecording,
-      child: Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.black,
-            width: 4,
-          ),
-        ),
-        child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: _isRecording ? 32 : 62,
-            height: _isRecording ? 32 : 62,
-            decoration: BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.circular(_isRecording ? 8 : 31),
+            android: AndroidVideoOptions(
+              bitrate: 6000000,
+              fallbackStrategy: QualityFallbackStrategy.lower,
             ),
           ),
         ),
+        onMediaCaptureEvent: (event){
+          switch (event.status) {
+            case MediaCaptureStatus.capturing:
+              debugPrint("DEBUG | Capturing video...");
+              break;
+            case MediaCaptureStatus.success:
+              debugPrint("DEBUG | Video captured successfully!");
+              event.captureRequest.when(
+                single: (single) {
+                  debugPrint('DEBUG | Video saved: ${single.file?.path}');
+                },
+                multiple: (multiple) {
+                  multiple.fileBySensor.forEach((key, value) {
+                    debugPrint('DEBUG | multiple video taken: $key ${value?.path}');
+                  });
+                },
+              );
+            case MediaCaptureStatus.failure:
+              debugPrint('DEBUG | Failed to capture video: ${event.exception}');
+              break;
+          }
+        },
+        sensorConfig: SensorConfig.single(
+          sensor: Sensor.position(SensorPosition.back),
+          flashMode: FlashMode.auto,
+          aspectRatio: CameraAspectRatios.ratio_4_3,
+          zoom: 0.0,
+        ),
+        enablePhysicalButton: true,
+        previewAlignment: Alignment.center,
+        previewFit: CameraPreviewFit.contain,
+        onMediaTap: (mediaCapture) {
+          mediaCapture.captureRequest.when(
+            single: (single) {
+              debugPrint('DEBUG | single: ${single.file?.path}');
+              //single.file?.open();
+            },
+            multiple: (multiple) {
+              multiple.fileBySensor.forEach((key, value) {
+                debugPrint('DEBUG | multiple file taken: $key ${value?.path}');
+                //value?.open();
+              });
+            },
+          );
+        },
       ),
     );
   }
 
-  Widget _buildZoomControls() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-    
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.5),
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            icon: const Icon(Icons.remove, color: Colors.white),
-            onPressed: () => _setZoomLevel(_currentZoom - 0.5),
-          ),
-        ),
-    
-        const SizedBox(width: 16),
-    
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.5),
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            icon: const Icon(Icons.add, color: Colors.white),
-            onPressed: () => _setZoomLevel(_currentZoom + 0.5),
-          ),
-        ),
-        const SizedBox(height: 16),
-        
-      ],
-    );
-  }
-
-  Future<void> _startRecording() async {
-    if (_isRecording) {
-      return;
-    }
-
-    try {
-      await _controller.startVideoRecording();
-      setState(() {
-        _isRecording = true;
-      });
-    } on CameraException catch (e) {
-      if(mounted) {
-        ErrorDialog.show(
-          context: context,
-          message: 'Error starting video recording: $e',
-          title: 'Camera Error',
-        );
-      }
-    }
-  }
-
-  Future<void> _stopRecording() async {
-    if (!_isRecording) {
-      return;
-    }
-
-    try {
-      XFile file = await _controller.stopVideoRecording();
-      CustomFile customFile = await _submissionProvider.createCustomFile(file);
-      _submissionProvider.addFile(customFile);
-
-      setState(() {
-        _isRecording = false;
-      });
-    } on CameraException catch (e) {
-      if(mounted) {
-        ErrorDialog.show(
-          context: context,
-          message: 'Error stopping video recording: $e',
-          title: 'Camera Error',
-        );
-      }
-    }
-  }
-
-  Future<void> _setZoomLevel(double zoom) async {
-    zoom = zoom.clamp(_minAvailableZoom, _maxAvailableZoom);
-    
-    try {
-      await _controller.setZoomLevel(zoom);
-      setState(() {
-        _currentZoom = zoom;
-      });
-    } catch (e) {
-      if(mounted) {
-        ErrorDialog.show(
-          context: context,
-          message: 'Error while trying to zoom: $e',
-          title: 'Camera Error',
-        );
-      }
-    }
-  }
 }

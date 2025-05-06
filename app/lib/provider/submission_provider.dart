@@ -1,4 +1,3 @@
-import 'package:camera/camera.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:app/data/custom_file.dart';
