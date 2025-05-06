@@ -1,9 +1,10 @@
+import 'package:app/widgets/error_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:app/provider/submission_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-
+import 'package:app/data/custom_file.dart';
 
 class RecordPage extends StatefulWidget {
   const RecordPage({super.key});
@@ -13,12 +14,12 @@ class RecordPage extends StatefulWidget {
 }
 
 class _RecordPageState extends State<RecordPage> {
-  //late SubmissionProvider _submissionProvider;
+  late SubmissionProvider _submissionProvider;
 
   @override
   void initState() {
     super.initState();
-    //_submissionProvider = Provider.of<SubmissionProvider>(context, listen: false);
+    _submissionProvider = Provider.of<SubmissionProvider>(context, listen: false);
   }
 
   @override
@@ -40,14 +41,42 @@ class _RecordPageState extends State<RecordPage> {
         onMediaCaptureEvent: (event){
           switch (event.status) {
             case MediaCaptureStatus.capturing:
-              debugPrint("DEBUG | Capturing video...");
               break;
             case MediaCaptureStatus.success:
-              debugPrint("DEBUG | Video captured successfully!");
               event.captureRequest.when(
-                single: (single) {
-                  debugPrint('DEBUG | Video saved: ${single.file?.path}');
+                single: (single) async {
+                  if (single.file == null) return;
+                  CustomFile customFile = await _submissionProvider.createCustomFile(single.file!);
+                  _submissionProvider.addFile(customFile);
+
+                  if(mounted){
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Video saved successfully!'),
+                          actions: [
+                            TextButton(
+                              style: Theme.of(context).textButtonTheme.style,
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Record another video'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pushReplacementNamed('/submission_page');
+                              },
+                              child: const Text('Done'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
                 },
+                // TODO: When does this happen even? Docs says it's front camera, but when I tried it used single
                 multiple: (multiple) {
                   multiple.fileBySensor.forEach((key, value) {
                     debugPrint('DEBUG | multiple video taken: $key ${value?.path}');
@@ -55,7 +84,7 @@ class _RecordPageState extends State<RecordPage> {
                 },
               );
             case MediaCaptureStatus.failure:
-              debugPrint('DEBUG | Failed to capture video: ${event.exception}');
+              ErrorDialog.show(context: context, message: '${event.exception}');
               break;
           }
         },
@@ -68,22 +97,17 @@ class _RecordPageState extends State<RecordPage> {
         enablePhysicalButton: true,
         previewAlignment: Alignment.center,
         previewFit: CameraPreviewFit.contain,
-        onMediaTap: (mediaCapture) {
-          mediaCapture.captureRequest.when(
-            single: (single) {
-              debugPrint('DEBUG | single: ${single.file?.path}');
-              //single.file?.open();
-            },
-            multiple: (multiple) {
-              multiple.fileBySensor.forEach((key, value) {
-                debugPrint('DEBUG | multiple file taken: $key ${value?.path}');
-                //value?.open();
-              });
-            },
-          );
-        },
+
+        // Play button
+        //onMediaTap: (mediaCapture) {
+        //  mediaCapture.captureRequest.when(
+        //    single: (single) {
+        //      debugPrint('DEBUG | single: ${single.file?.path}');
+        //      //single.file?.open();
+        //    },
+        //  );
+        //},
       ),
     );
   }
-
 }
