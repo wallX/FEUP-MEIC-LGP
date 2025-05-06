@@ -1,6 +1,10 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:app/widgets/error_dialog.dart';
+import 'package:app/data/custom_file.dart';
+import 'package:provider/provider.dart';
+import 'package:app/provider/submission_provider.dart';
+import 'package:cross_file/cross_file.dart' show XFile;
 
 
 
@@ -13,6 +17,7 @@ class RecordPage extends StatefulWidget {
 
 class _RecordPageState extends State<RecordPage> {
   late final List<CameraDescription> _cameras;
+  late SubmissionProvider _submissionProvider;
   late CameraController _controller;
   bool _isInitialized = false;
   bool _isRecording = false;
@@ -70,6 +75,7 @@ class _RecordPageState extends State<RecordPage> {
   @override
   void initState() {
     super.initState();
+    _submissionProvider = Provider.of<SubmissionProvider>(context, listen: false);
     _initializeCamera();
   }
 
@@ -261,7 +267,10 @@ class _RecordPageState extends State<RecordPage> {
     }
 
     try {
-      XFile video = await _controller.stopVideoRecording();
+      XFile file = await _controller.stopVideoRecording();
+      CustomFile customFile = await _submissionProvider.createCustomFile(file);
+      _submissionProvider.addFile(customFile);
+
       setState(() {
         _isRecording = false;
       });

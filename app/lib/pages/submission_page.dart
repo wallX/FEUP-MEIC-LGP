@@ -104,7 +104,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
     if (mediaFiles != null) {
       List<File> files = mediaFiles.paths.map((path) => File(path!)).toList();
       List<CustomFile> customFiles = _submissionProvider.selectedFiles;
-
+      // TODO: use submission provider to create
       for (File file in files) {
         final metadata = await _extractVideoMetadata(file.path);
 

@@ -1,11 +1,16 @@
+import 'package:camera/camera.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:app/data/custom_file.dart';
 import 'package:app/services/upload_service.dart';
+import 'package:app/widgets/submission_page/video/video_thumbnail.dart';
+import 'package:flutter_video_info/flutter_video_info.dart';
+import 'package:cross_file/cross_file.dart' show XFile;
+import 'dart:async';
 
 /// Class to manage the submission of videos in the app, so that by leaving the submission_page, videos won't be removed
 class SubmissionProvider extends ChangeNotifier {
   List<CustomFile> selectedFiles = [];
-  //Set<String> selectedFilesSet = {};
   bool isUploading = false;
   UploadService? _uploadService;
 
@@ -27,14 +32,10 @@ class SubmissionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /*bool addPathToSet(String path) {
-    if (selectedFilesSet.contains(path)) {
-      return false; // Path already exists in the set
-    }
-    selectedFilesSet.add(path);
+  void addFile(CustomFile file) {
+    selectedFiles.add(file);
     notifyListeners();
-    return true; // Path added successfully
-  }*/
+  }
   
   void removeFile(int index) {
     if (index >= 0 && index < selectedFiles.length) {
@@ -98,5 +99,49 @@ class SubmissionProvider extends ChangeNotifier {
 
   bool get isPaused {
     return _uploadService != null && _uploadService!.isPaused;
+  }
+
+  Future<CustomFile> createCustomFile(XFile xfile) async {
+    final file = File(xfile.path);
+
+    final metadata = await _extractVideoMetadata(file.path);
+
+    return CustomFile(
+      name: file.path.split('/').last,
+      size: file.lengthSync(),
+      file: xfile,
+      thumbnail: VideoThumbnail(
+        key: ValueKey(file.path),
+        videoPath: file.path,
+      ),
+      progress: 0,
+      estimate: Duration.zero,
+      duration: metadata['duration'],
+      width: metadata['width'],
+      height: metadata['height'],
+      orientation: metadata['orientation'],
+      date: metadata['date'],
+      framerate: metadata['framerate'],
+      location: metadata['location'] ?? "",
+    );
+  }
+
+  Future<Map<String, dynamic>> _extractVideoMetadata(String filePath) async {
+    final videoInfo = FlutterVideoInfo();
+    final info = await videoInfo.getVideoInfo(filePath);
+
+    if (info == null) {
+      throw Exception('Failed to extract video metadata');
+    }
+
+    return {
+      'duration': (info.duration ?? 0) / 1000, // ms to seconds
+      'width': info.width ?? 0,
+      'height': info.height ?? 0,
+      'date': info.date ?? "",
+      'orientation': info.orientation ?? "",
+      'framerate': info.framerate ?? 0,
+      'location ': info.location  ?? "",
+    };
   }
 }
