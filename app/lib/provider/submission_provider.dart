@@ -100,6 +100,29 @@ class SubmissionProvider extends ChangeNotifier {
     return _uploadService != null && _uploadService!.isPaused;
   }
 
+  Future<CustomFile> createCustomFileWithFile(File file) async {
+    final metadata = await _extractVideoMetadata(file.path);
+
+    return CustomFile(
+      name: file.path.split('/').last,
+      size: file.lengthSync(),
+      file: XFile(file.path),
+      thumbnail: VideoThumbnail(
+        key: ValueKey(file.path),
+        videoPath: file.path,
+      ),
+      progress: 0,
+      estimate: Duration.zero,
+      duration: metadata['duration'],
+      width: metadata['width'],
+      height: metadata['height'],
+      orientation: metadata['orientation'],
+      date: metadata['date'],
+      framerate: metadata['framerate'],
+      location: metadata['location'] ?? "",
+    );
+  }
+
   Future<CustomFile> createCustomFile(XFile xfile) async {
     final file = File(xfile.path);
 

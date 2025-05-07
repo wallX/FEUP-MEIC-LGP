@@ -1,3 +1,4 @@
+import 'package:app/widgets/error_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
@@ -104,29 +105,11 @@ class _SubmissionPageState extends State<SubmissionPage> {
     if (mediaFiles != null) {
       List<File> files = mediaFiles.paths.map((path) => File(path!)).toList();
       List<CustomFile> customFiles = _submissionProvider.selectedFiles;
-      // TODO: use submission provider to create
-      for (File file in files) {
-        final metadata = await _extractVideoMetadata(file.path);
 
-        customFiles.add(CustomFile(
-          name: file.path.split('/').last,
-          size: file.lengthSync(),
-          file: XFile(file.path),
-          thumbnail: VideoThumbnail(
-            key: ValueKey(file.path),
-            videoPath: file.path,
-          ),
-          progress: 0,
-          estimate: Duration.zero,
-          duration: metadata['duration'],
-          width: metadata['width'],
-          height: metadata['height'],
-          orientation: metadata['orientation'],
-          date: metadata['date'],
-          framerate: metadata['framerate'],
-          location: metadata['location'] ?? "",
-        ));
+      for (File file in files) {
+        customFiles.add(await _submissionProvider.createCustomFileWithFile(file));
       }
+
       _submissionProvider.setFiles(customFiles);
     }
   }
@@ -153,7 +136,11 @@ class _SubmissionPageState extends State<SubmissionPage> {
 
               } catch (e) {
                 if (mounted) {
-                  _showErrorDialog(e.toString());
+                  ErrorDialog.show(
+                    context: context,
+                    title: 'Upload Error',
+                    message: e.toString(),
+                  );
                 }
               } finally {
                 _submissionProvider.setUploading(false);
@@ -233,53 +220,6 @@ class _SubmissionPageState extends State<SubmissionPage> {
             )
           : const Text('Submit Videos'),
     );
-  }
-
-  // TODO: TROCARRRR
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Upload Error'),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-          titleTextStyle: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-          contentTextStyle: TextStyle(
-            fontSize: 16,
-          ),
-        );
-      },
-    );
-  }
-
-  Future<Map<String, dynamic>> _extractVideoMetadata(String filePath) async {
-    final videoInfo = FlutterVideoInfo();
-    final info = await videoInfo.getVideoInfo(filePath);
-
-    if (info == null) {
-      throw Exception('Failed to extract video metadata');
-    }
-
-    return {
-      'duration': (info.duration ?? 0) / 1000, // ms to seconds
-      'width': info.width ?? 0,
-      'height': info.height ?? 0,
-      'date': info.date ?? "",
-      'orientation': info.orientation ?? "",
-      'framerate': info.framerate ?? 0,
-      'location ': info.location  ?? "",
-    };
   }
 }
 
