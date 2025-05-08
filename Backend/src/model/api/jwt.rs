@@ -1,4 +1,4 @@
-use crate::model::api::Role::Role;
+use crate::model::api::role::Role;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};

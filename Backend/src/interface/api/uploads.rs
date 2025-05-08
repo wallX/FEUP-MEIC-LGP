@@ -6,7 +6,7 @@ use serde_json::Value;
 use std::sync::Arc;
 use crate::interface::api::auth::check_role;
 use crate::model::api::jwt::Claims;
-use crate::model::api::Role::Role;
+use crate::model::api::role::Role;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
