@@ -3,6 +3,7 @@ tusd:
   internal_name: "tusd" #inside docker network
   #internal_name: "localhost" #inside docker network
   internal_port: "1080"
+  ##### IMPORTANT ##### Change this to your server's external IP or domain name
   external_name: "localhost" #outside connection hostname
   external_port:
   external_endpoint: "upload"
@@ -17,5 +18,5 @@ redis:
   db: 0
 jwt: 
   token: "b3dc1860-b859-4a8e-8ed0-909c4734a41f"
-  token_ttl: 1 #in minutes
+  token_ttl: 200 #in minutes
   refresh_token_ttl : 7 #in days 
