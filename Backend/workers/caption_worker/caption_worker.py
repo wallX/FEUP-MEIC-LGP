@@ -63,7 +63,7 @@ def save_captions(file_name, captions):
     print(f"Saved captions to {output_path}")
 
 def process_video(file_name):
-    original_path = os.path.join(UPLOAD_DIR, VIDEO_PATH_TEST)
+    original_path = os.path.join(UPLOAD_DIR, file_name)
     if not os.path.isfile(original_path):
         print(f"File not found: {original_path}")
         return

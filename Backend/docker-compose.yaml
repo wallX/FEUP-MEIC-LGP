@@ -67,7 +67,7 @@ services:
     restart: always
   transcription-worker:
     build:
-      context: ./transcription_worker
+      context: ./workers/transcription_worker
       dockerfile: transcription_worker.Dockerfile
     depends_on:
       - redis
@@ -75,12 +75,12 @@ services:
       - tusd-network
     volumes:
       - ./uploads:/app/uploads
-      - ./transcription_worker:/app
+      - ./workers/transcription_worker:/app
     environment:
       - PYTHONUNBUFFERED=1
   caption-worker:
     build:
-      context: ./caption_worker
+      context: ./workers/caption_worker
       dockerfile: caption_worker.Dockerfile
     depends_on:
       - redis
@@ -88,12 +88,12 @@ services:
       - tusd-network
     volumes:
       - ./uploads:/app/uploads
-      - ./caption_worker:/app
+      - ./workers/caption_worker:/app
     environment:
       - PYTHONUNBUFFERED=1
   description-worker:
     build:
-      context: ./description_worker
+      context: ./workers/description_worker
       dockerfile: description_worker.Dockerfile
     depends_on:
       - redis
@@ -101,7 +101,7 @@ services:
       - tusd-network
     volumes:
       - ./uploads:/app/uploads
-      - ./description_worker:/app
+      - ./workers/description_worker:/app
     environment:
       - PYTHONUNBUFFERED=1
 networks:

@@ -30,8 +30,8 @@ def load_json(path):
 def format_prompt(transcription, captions):
     caption_text = "\n".join([f"Frame {c['frame']}: {c['caption']}" for c in captions])
     prompt = (
-        "I am going to give you the full transcription of a video, and a description of each frame per second.\n"
-        "Keep in mind that there might be several captions with misleading information — your task is to identify the correct context using the transcription, then summarize the video clearly.\n\n"
+        "I am going to give you the full transcription of a video, and a description of each frame per second."
+        "Keep in mind that there might be several captions with misleading information, you must recognize the correct captions with the help of the transcription. With this information, summarize the video.\n\n"
         f"Transcription:\n{transcription}\n\nCaptions:\n{caption_text}"
     )
     return prompt
@@ -52,7 +52,7 @@ def query_llamacpp(prompt, model="llama"):
 
 def save_summary(file_name, summary):
     folder = os.path.join(UPLOAD_DIR, f"{file_name}_analysis")
-    output_path = os.path.join(folder, f"{file_name}_summary.json")
+    output_path = os.path.join(folder, f"{file_name}_description.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump({"summary": summary.strip()}, f, indent=2)
     print(f"Saved summary to {output_path}")
