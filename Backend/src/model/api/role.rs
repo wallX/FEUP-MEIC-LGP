@@ -1,8 +1,12 @@
 use std::str::FromStr;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-#[derive(Clone)]
+use sqlx::{Type, postgres::PgTypeInfo};
+use sqlx::postgres::PgHasArrayType;
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Type)]
+#[sqlx(type_name = "role_enum")]
+#[sqlx(rename_all = "PascalCase")]
 pub enum Role {
     Admin,
     Moderator,

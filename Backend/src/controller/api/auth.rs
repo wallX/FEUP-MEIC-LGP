@@ -1,6 +1,6 @@
 use crate::interface::api::auth::LoginRequest;
 use crate::model::api::jwt::{decode_expired_jwt, generate_jwt, validate_jwt, Claims};
-use crate::model::api::user::User;
+use crate::model::api::user;
 use crate::model::api::Role::Role;
 use crate::utils::password_util::{hash_password, verify_password};
 use crate::utils::Singleton;
@@ -33,27 +33,21 @@ pub fn extract_jwt_controller (auth_str: &str, singleton: &Singleton, validate: 
 }
 
 
-pub fn validate_user_login(email: String, password: String, singleton: &Singleton) -> Result<User, String> {
-    // fetch user from db but mock user for testing
-    let mock_user = User {
-        id: Uuid::new_v4(),
-        email: "test@example.com".to_string(),
-        name: "Test User".to_string(),
-        password_hash: hash_password(&"password123".to_string())?, // Normally, use a hashed password!
-        roles: vec![Role::Admin, Role::User, Role::Moderator], // Mock role
-    };
+pub async fn validate_user_login(email: String, password: String, singleton: &Singleton) -> Result<user::User, String> {
     
-    // Password hasher 
-
-    if email == mock_user.email && verify_password(password.as_ref(), mock_user.password_hash.as_ref()) {
-        return Ok(mock_user);
+    // fetch user from db
+    let u = user::get_user_by_email(singleton.postgres(), &email).await.unwrap();
+    
+    // Password hasher
+    if email == u.email && verify_password(password.as_ref(), u.password_hash.as_ref()) {
+        return Ok(u);
     } 
     Err(String::from("Invalid email or password"))
 }
 
-pub fn generate_tokens(login: &LoginRequest, singleton: &Singleton) -> Result<serde_json::value::Value, String> {
+pub async fn generate_tokens(login: &LoginRequest, singleton: &Singleton) -> Result<serde_json::value::Value, String> {
     
-    let user = match validate_user_login(login.email.clone(), login.password.clone(), singleton) {
+    let user = match validate_user_login(login.email.clone(), login.password.clone(), singleton).await {
         Ok(user) => user,
         Err(err) => return Err(err),
     };
@@ -62,11 +56,7 @@ pub fn generate_tokens(login: &LoginRequest, singleton: &Singleton) -> Result<se
     let token_ttl = singleton.config().lock().unwrap().jwt.token_ttl;
     let refresh_token_ttl = singleton.config().lock().unwrap().jwt.refresh_token_ttl;
     
-    // let jwt = match generate_jwt(user.id, user.roles.clone(), &secret, token_ttl) {
-    //     Ok(token) => token,
-    //     Err(_) => return Err(String::from("Failed to generate JWT token")),
-    // };
-    let jwt = match generate_jwt(user.id, vec![], &secret, token_ttl) {
+    let jwt = match generate_jwt(user.id, user.roles.clone(), &secret, token_ttl) {
         Ok(token) => token,
         Err(_) => return Err(String::from("Failed to generate JWT token")),
     };

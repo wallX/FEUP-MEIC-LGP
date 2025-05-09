@@ -21,11 +21,19 @@ pub struct User {
 }
 
 pub async fn create_user(pool: &sqlx::PgPool, email: &str, name: &str, password_hash:&str) -> Result<(), sqlx::Error> {
-    sqlx::query("INSERT INTO users (email, name, password_hash) VALUES ($1, $2, $2)")
+    sqlx::query("INSERT INTO users (email, name, password_hash) VALUES ($1, $2, $3)")
         .bind(email)
         .bind(name)
         .bind(password_hash)
         .execute(pool)
         .await?;
     Ok(())
+}
+
+pub async fn get_user_by_email(pool: &sqlx::PgPool, email: &str) -> Result<User, sqlx::Error> {
+    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
+        .bind(email)
+        .fetch_one(pool)
+        .await?;
+    Ok(user)
 }

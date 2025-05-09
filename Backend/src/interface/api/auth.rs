@@ -2,6 +2,8 @@ use crate::controller::api::auth::{extract_jwt_controller, generate_tokens, logo
 use crate::model::api::jwt::Claims;
 use crate::model::api::Role::Role;
 use crate::utils::Singleton;
+use crate::model::api::user;
+use crate::utils::password_util::hash_password;
 use actix_web::{web, Error, HttpMessage, HttpRequest, HttpResponse};
 use serde::Deserialize;
 use std::sync::Arc;
@@ -11,6 +13,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         web::scope("/auth")
             .route("", web::get().to(auth))
             .route("/login", web::post().to(login))
+            .route("/register", web::post().to(register))
             .route("/logout", web::post().to(logout))
             .route("/refresh", web::post().to(refresh)),
     );
@@ -23,12 +26,33 @@ pub struct LoginRequest {
 }
 
 
+#[derive(Deserialize)]
+pub struct RegisterRequest {
+    pub email: String,
+    pub name: String,
+    pub password: String,
+}
+
+
 async fn login(data: web::Json<LoginRequest>, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
-    match generate_tokens(&data.into_inner(), &singleton) {
+    match generate_tokens(&data.into_inner(), &singleton).await {
         Ok(tokens) => HttpResponse::Ok().json(tokens),
         Err(error) => HttpResponse::InternalServerError().json(error),
     }
 }
+
+async fn register(data: web::Json<RegisterRequest>, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
+    let hash = match hash_password(&data.password) {
+        Ok(hash) => hash,
+        Err(error) => return HttpResponse::InternalServerError().json(error),
+    };
+
+    match user::create_user(&singleton.postgres(), &data.email, &data.name, hash.as_str()).await {
+        Ok(_) => HttpResponse::Ok().json("User created successfully"),
+        Err(_) => HttpResponse::InternalServerError().json("Failed to create user"),
+    }
+}
+
 async fn logout(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
     let (token,claims) = match extract_jwt(req.clone(),false, singleton.clone()) {
         Ok(token) => token,
