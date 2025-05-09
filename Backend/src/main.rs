@@ -15,7 +15,13 @@ use redis::ConnectionLike;
 use reqwest::Client;
 use services::pipeline_queue::PipelineQueue;
 use services::worker;
+use sqlx::postgres;
 use std::sync::Arc;
+
+
+// DELETE
+use crate::utils::db;
+// DELETE
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -37,12 +43,16 @@ async fn main() -> std::io::Result<()> {
         panic!("Failed to initialize client");
     });
 
+    let postgres_pool = db::connect().await.expect("Database connection failed");
+    singleton.init_postgres(postgres_pool).unwrap_or_else(|_| {
+        panic!("Failed to initialize postgres pool");
+    });
+
     let shared_singleton = Arc::new(singleton);
     let web_data = web::Data::new(shared_singleton.clone());
 
 
     worker::start_worker(shared_singleton.clone());
-
 
     HttpServer::new(move || {
         App::new()

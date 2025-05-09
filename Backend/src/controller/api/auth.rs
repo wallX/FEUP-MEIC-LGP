@@ -34,18 +34,18 @@ pub fn extract_jwt_controller (auth_str: &str, singleton: &Singleton, validate: 
 
 
 pub fn validate_user_login(email: String, password: String, singleton: &Singleton) -> Result<User, String> {
-    //fetch user from db but mock user for testing
+    // fetch user from db but mock user for testing
     let mock_user = User {
         id: Uuid::new_v4(),
         email: "test@example.com".to_string(),
-        hash: hash_password(&"password123".to_string())?, // Normally, use a hashed password!
+        name: "Test User".to_string(),
+        password_hash: hash_password(&"password123".to_string())?, // Normally, use a hashed password!
         roles: vec![Role::Admin, Role::User, Role::Moderator], // Mock role
-        is_active: true,
     };
     
     // Password hasher 
 
-    if email == mock_user.email && verify_password(password.as_ref(), mock_user.hash.as_ref()) {
+    if email == mock_user.email && verify_password(password.as_ref(), mock_user.password_hash.as_ref()) {
         return Ok(mock_user);
     } 
     Err(String::from("Invalid email or password"))
@@ -62,10 +62,15 @@ pub fn generate_tokens(login: &LoginRequest, singleton: &Singleton) -> Result<se
     let token_ttl = singleton.config().lock().unwrap().jwt.token_ttl;
     let refresh_token_ttl = singleton.config().lock().unwrap().jwt.refresh_token_ttl;
     
-    let jwt = match generate_jwt(user.id, user.roles.clone(), &secret, token_ttl) {
+    // let jwt = match generate_jwt(user.id, user.roles.clone(), &secret, token_ttl) {
+    //     Ok(token) => token,
+    //     Err(_) => return Err(String::from("Failed to generate JWT token")),
+    // };
+    let jwt = match generate_jwt(user.id, vec![], &secret, token_ttl) {
         Ok(token) => token,
         Err(_) => return Err(String::from("Failed to generate JWT token")),
     };
+
     // Generate refresh token (UUID for simplicity)
     let refresh_token = Uuid::new_v4();
     let expiration = Utc::now()

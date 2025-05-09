@@ -12,6 +12,7 @@ pub struct Singleton {
     client: OnceLock<Client>,
     queue: OnceLock<PipelineQueue>,
     redis: OnceLock<RedisClient>,
+    postgres: OnceLock<sqlx::PgPool>,
 }
 
 impl Singleton {
@@ -22,6 +23,7 @@ impl Singleton {
             client: OnceLock::new(),
             queue: OnceLock::new(),
             redis: OnceLock::new(),
+            postgres: OnceLock::new(),
         });
 
        ret
@@ -44,6 +46,10 @@ impl Singleton {
         self.redis.set(redis)
     }
 
+    pub fn init_postgres(&self, postgres: sqlx::PgPool) -> Result<(), sqlx::PgPool> {
+        self.postgres.set(postgres)
+    }
+
     pub fn config(&self) -> &Mutex<config::AppConfig> {
         self.config.get().expect("Config not initialized")
     }
@@ -58,6 +64,10 @@ impl Singleton {
 
     pub fn redis(&self) -> &RedisClient {
         self.redis.get().expect("Redis not initialized")
+    }
+
+    pub fn postgres(&self) -> &sqlx::PgPool {
+        self.postgres.get().expect("Postgres not initialized")
     }
 
 }
