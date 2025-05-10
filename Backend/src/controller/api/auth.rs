@@ -45,7 +45,7 @@ pub async fn validate_user_login(email: String, password: String, singleton: &Si
     Err(String::from("Invalid email or password"))
 }
 
-pub async fn generate_tokens(login: &LoginRequest, singleton: &Singleton) -> Result<serde_json::value::Value, String> {
+pub async fn generate_tokens_and_login_info(login: &LoginRequest, singleton: &Singleton) -> Result<serde_json::value::Value, String> {
     
     let user = match validate_user_login(login.email.clone(), login.password.clone(), singleton).await {
         Ok(user) => user,
@@ -70,7 +70,20 @@ pub async fn generate_tokens(login: &LoginRequest, singleton: &Singleton) -> Res
     //Add token to redis
     
     singleton.redis().refresh_token(&refresh_token.to_string(), &user.id.clone().to_string(), expiration as u64).unwrap();
-    Ok(serde_json::json!({ "token": jwt, "refresh": refresh_token, "refreshTTL": expiration }))
+    Ok(
+        serde_json::json!(
+            {
+                "token": jwt,
+                "refresh": refresh_token,
+                "refreshTTL": expiration,
+                "user": {
+                    "email": user.email,
+                    "name": user.name,
+                    "roles": user.roles
+                }
+            }
+        )
+    )
 }
 
 

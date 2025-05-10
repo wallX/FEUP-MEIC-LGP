@@ -1,4 +1,4 @@
-use crate::controller::api::auth::{extract_jwt_controller, generate_tokens, logout_user, refresh_token};
+use crate::controller::api::auth::{extract_jwt_controller, generate_tokens_and_login_info, logout_user, refresh_token};
 use crate::model::api::jwt::Claims;
 use crate::model::api::Role::Role;
 use crate::utils::Singleton;
@@ -35,7 +35,7 @@ pub struct RegisterRequest {
 
 
 async fn login(data: web::Json<LoginRequest>, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
-    match generate_tokens(&data.into_inner(), &singleton).await {
+    match generate_tokens_and_login_info(&data.into_inner(), &singleton).await {
         Ok(tokens) => HttpResponse::Ok().json(tokens),
         Err(error) => HttpResponse::InternalServerError().json(error),
     }

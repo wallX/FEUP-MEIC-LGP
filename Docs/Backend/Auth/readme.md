@@ -29,7 +29,12 @@ None
 {
   "token": "<JWT_TOKEN>",
   "refresh": "<REFRESH_TOKEN>",
-  "refreshTTL": 1712345678
+  "refreshTTL": 1712345678,
+  "user": {
+    "email": "example@mail.com",
+    "name": "User",
+    "roles": "xyz"
+  }
 }
 ```
 
