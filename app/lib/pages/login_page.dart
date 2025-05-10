@@ -121,15 +121,15 @@ class _LoginPageState extends State<LoginPage> {
             buildWelcomeText(),
         
             _buildLoginForm(),
-            _buildForgotPassword(),
-            const SizedBox(height: 8.0),
+            // _buildForgotPassword(),
+            const SizedBox(height: 16.0),
             _buildLoginButton(),
             const SizedBox(height: 8.0),
             _registerButton(),
-            const SizedBox(height: 2.0),
-            buildSeparatorLine(),
-            const SizedBox(height: 8.0),
-            _buildContinueWith(),
+            // const SizedBox(height: 2.0),
+            // buildSeparatorLine(),
+            // const SizedBox(height: 8.0),
+            // _buildContinueWith(),
         
         
           ],

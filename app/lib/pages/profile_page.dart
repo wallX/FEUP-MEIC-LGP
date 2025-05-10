@@ -71,12 +71,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () => _showDialog(const LogoutConfirmationDialog()),
                 ),
-                const Divider(),
-                _buildSettingsTile(
-                  title: 'Delete account',
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () => _showDialog(const DeleteAccountDialog()),
-                ),
+                // const Divider(),
+                // _buildSettingsTile(
+                //   title: 'Delete account',
+                //   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                //   onTap: () => _showDialog(const DeleteAccountDialog()),
+                // ),
               ],
             ),
           );

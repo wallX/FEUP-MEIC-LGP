@@ -52,35 +52,35 @@ class ProfileHeader extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: theme.primaryColor,
-                child: IconButton(
-                  icon: const Icon(Icons.edit, size: 16, color: Colors.white),
-                  onPressed: () {
-                    if (profileImage == null) {
-                      pickAndSaveProfileImage(
-                        userEmail: user.email,
-                        onImageSelected: onImageSelected,
-                      );
-                    } else {
-                      showDialog(
-                        context: context,
-                        builder:
-                            (_) => ImageOptionsDialog(
-                              profileImage: profileImage,
-                              onImageSelected: onImageSelected,
-                              userEmail: user.email,
-                            ),
-                      );
-                    }
-                  },
-                ),
-              ),
-            ),
+            // Positioned(
+            //   bottom: 0,
+            //   right: 0,
+            //   child: CircleAvatar(
+            //     radius: 16,
+            //     backgroundColor: theme.primaryColor,
+            //     child: IconButton(
+            //       icon: const Icon(Icons.edit, size: 16, color: Colors.white),
+            //       onPressed: () {
+            //         if (profileImage == null) {
+            //           pickAndSaveProfileImage(
+            //             userEmail: user.email,
+            //             onImageSelected: onImageSelected,
+            //           );
+            //         } else {
+            //           showDialog(
+            //             context: context,
+            //             builder:
+            //                 (_) => ImageOptionsDialog(
+            //                   profileImage: profileImage,
+            //                   onImageSelected: onImageSelected,
+            //                   userEmail: user.email,
+            //                 ),
+            //           );
+            //         }
+            //       },
+            //     ),
+            //   ),
+            // ),
           ],
         ),
         const SizedBox(height: 12),
