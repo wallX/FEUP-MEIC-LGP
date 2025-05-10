@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/token_service.dart';
 import 'package:app/widgets/error_dialog.dart';
+import 'package:app/widgets/success_dialog.dart';
 import '../data/user.dart';
 import 'package:provider/provider.dart';
 import '../provider/user_provider.dart';
@@ -48,6 +49,14 @@ class _RegisterPageState extends State<RegisterPage> {
 
         if (response.statusCode == 200){
           if (!mounted) return;
+          SuccessDialog.show(
+            context: context,
+            message: 'Registration successful. You may log in now.',
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog
+              Navigator.pop(context); // Go back to the previous screen
+            },
+          );
         } else {
           if (!mounted) return;
           ErrorDialog.show(context: context, message: 'Register failed. Please try again.');
@@ -61,10 +70,7 @@ class _RegisterPageState extends State<RegisterPage> {
           _isLoading = false;
         });
         _passwordController.clear();
-      }      
-
-    if (!mounted) return;
-    Navigator.pop(context); // Go back to the previous screen
+      }
     }
   }
 
