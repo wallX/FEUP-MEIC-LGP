@@ -9,14 +9,14 @@ enum UserType {
 class User{
   final String name;
   final String email;
-  final UserType userType;
+  final UserType? userType;
   final TokenService tokens;
   final List<String>? stations;
   
   User({
     required this.name,
     required this.email,
-    required this.userType,
+    this.userType,
     required this.tokens,
     this.stations,
   });

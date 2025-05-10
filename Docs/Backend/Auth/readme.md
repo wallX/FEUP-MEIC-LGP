@@ -29,13 +29,41 @@ None
 {
   "token": "<JWT_TOKEN>",
   "refresh": "<REFRESH_TOKEN>",
-  "refreshTTL": 1712345678
+  "refreshTTL": 1712345678,
+  "user": {
+    "email": "example@mail.com",
+    "name": "User",
+    "roles": "xyz"
+  }
 }
 ```
 
 ---
 
-## **2. Logout**
+## **2. Register**
+### **Endpoint:**
+```
+POST /api/auth/register
+```
+
+### **Headers:**
+None
+
+### **Request Body:**
+```json
+{
+  "email": "test@example.com",
+  "name": "Test user",
+  "password": "password123"
+}
+```
+
+### **Response:**
+```User created successfully```
+
+---
+
+## **3. Logout**
 ### **Endpoint:**
 ```
 POST /api/auth/logout
@@ -59,7 +87,7 @@ None
 
 ---
 
-## **3. Refresh Token**
+## **4. Refresh Token**
 ### **Endpoint:**
 ```
 POST /api/auth/refresh
@@ -85,7 +113,7 @@ None
 
 ---
 
-## **4. Authenticate User and Role Check**
+## **5. Authenticate User and Role Check**
 ### **Endpoint:**
 ```
 GET /api/auth
