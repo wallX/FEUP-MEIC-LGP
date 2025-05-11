@@ -1,4 +1,3 @@
-import 'package:app/manager/theme_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:app/widgets/nav_bar.dart';
 import 'package:app/pages/home_page.dart';
@@ -33,19 +32,15 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: themeManager,
-      builder: (context, child) => Scaffold(
-        backgroundColor: themeManager.theme.backgroundColor,
-        body: Consumer<UserProvider>(
-          builder: (context, userProvider, child) {
-            final user = userProvider.user;
-            if (user == null) {
-              return _loggedOutPage();
-            }
-            return _loggedInPage();
-          },
-        ),
+    return Scaffold(
+      body: Consumer<UserProvider>(
+        builder: (context, userProvider, child) {
+          final user = userProvider.user;
+          if (user == null) {
+            return _loggedOutPage();
+          }
+          return _loggedInPage();
+        },
       ),
     );
   }
@@ -66,21 +61,14 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
 
   @override
   void initState() {
-    themeManager.addListener(themeListener);
     super.initState();
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
-    themeManager.removeListener(themeListener);
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
   }
 
-  themeListener() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
 }

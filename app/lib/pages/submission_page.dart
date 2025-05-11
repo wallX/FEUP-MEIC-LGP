@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:app/widgets/submission_page/video/video_thumbnail.dart';
-import 'package:app/manager/theme_manager.dart';
 import 'package:cross_file/cross_file.dart' show XFile;
-import 'package:tusc/tusc.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
 import 'package:app/data/custom_file.dart';
 import 'package:app/widgets/submission_page/file_list.dart';
 import 'package:app/services/api_service.dart';
-import 'package:dio/dio.dart';
 import 'package:app/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:app/data/user.dart';
+import 'package:flutter_video_info/flutter_video_info.dart';
+import 'dart:async';
+import 'package:app/provider/submission_provider.dart';
+import 'package:app/services/upload_service.dart';
 
 class SubmissionPage extends StatefulWidget {
   const SubmissionPage({super.key});
@@ -22,13 +21,10 @@ class SubmissionPage extends StatefulWidget {
 }
 
 class _SubmissionPageState extends State<SubmissionPage> {
-  List<CustomFile> _selectedFiles = [];
-  bool _isUploading = false;
-
-  var httpClient = http.Client();
 
   late final ApiService _apiService;
   late final User _user;
+  late final SubmissionProvider _submissionProvider;
 
   @override
   void didChangeDependencies() {
@@ -36,39 +32,42 @@ class _SubmissionPageState extends State<SubmissionPage> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     _user = userProvider.user!; 
     _apiService = ApiService(_user.tokens);
+
+    _submissionProvider = Provider.of<SubmissionProvider>(context, listen: false);
+
+    if (!_submissionProvider.isUploadServiceInitialized) {
+      _submissionProvider.uploadService(UploadService(_apiService, _user));
+    }
   }
   
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: themeManager,
-      builder: (context, child) {
+    return ListenableBuilder(
+      listenable: _submissionProvider,
+      builder: (context, _){
         return Scaffold(
-          backgroundColor: themeManager.theme.backgroundColor,
           body: _buildUI(),
           floatingActionButton: _selectVideoFromGalleryButton(),
         );
-      },
+      }
     );
   }
 
   Widget _buildUI() {
     return Container(
-      child: _selectedFiles.isEmpty
+      child: _submissionProvider.isEmpty()
           ? Center( // Empty
-              child: Text('No video selected', style: TextStyle(color: themeManager.theme.textColor)),
+              child: Text('No video selected'),
             )
 
           : Column(
               children: [
                 Expanded(
                   child: FileList(
-                    files: _selectedFiles,
-                    isUploading: _isUploading,
-                    onRemove: _isUploading ? null : (index) {
-                      setState(() {
-                        _selectedFiles.removeAt(index);
-                      });
+                    files: _submissionProvider.selectedFiles,
+                    isUploading: _submissionProvider.isUploading,
+                    onRemove: _submissionProvider.isUploading ? null : (index) {
+                      _submissionProvider.removeFile(index);
                     },
                   ),
                 ),
@@ -84,186 +83,153 @@ class _SubmissionPageState extends State<SubmissionPage> {
 
   // Widget to select a video from the gallery
   Widget _selectVideoFromGalleryButton() {
-    return FloatingActionButton(
-      onPressed: _isUploading ? null : _selectVideoFromGallery,
+    return _submissionProvider.isUploading ? 
+      const SizedBox.shrink() :
+      FloatingActionButton(
+      onPressed: _submissionProvider.isUploading ? null : _selectVideoFromGallery,
       tooltip: 'Select video from gallery',
       child: const Icon(Icons.video_library),
     );
-  }
+  } 
 
-  // Function to select a video from the gallery
   Future<void> _selectVideoFromGallery() async {
     FilePickerResult? mediaFiles = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.video,
     );
+
     if (mediaFiles != null) {
       List<File> files = mediaFiles.paths.map((path) => File(path!)).toList();
-      setState(() {
-        _selectedFiles = files.map((file) => CustomFile(
+      List<CustomFile> customFiles = _submissionProvider.selectedFiles;
+
+      for (File file in files) {
+        final metadata = await _extractVideoMetadata(file.path);
+
+        customFiles.add(CustomFile(
           name: file.path.split('/').last,
           size: file.lengthSync(),
           file: XFile(file.path),
-          thumbnail: VideoThumbnail(videoPath: file.path),
+          thumbnail: VideoThumbnail(
+            key: ValueKey(file.path),
+            videoPath: file.path,
+          ),
           progress: 0,
           estimate: Duration.zero,
-          
-        )).toList();
-      });
+          duration: metadata['duration'],
+          width: metadata['width'],
+          height: metadata['height'],
+          orientation: metadata['orientation'],
+          date: metadata['date'],
+          framerate: metadata['framerate'],
+          location: metadata['location'] ?? "",
+        ));
+      }
+      _submissionProvider.setFiles(customFiles);
     }
   }
 
   Widget _submitButton() {
     return ElevatedButton(
 
-      onPressed: _isUploading 
+      onPressed: _submissionProvider.isUploading 
           ? null 
           : () async {
-
-              setState(() {
-                _isUploading = true;
-              });
+              _submissionProvider.setUploading(true);
 
               try {
-                await _uploadToTus();
-              
-                // Visual feedback
-                final snackbar = SnackBar(
-                  content: const Text('Videos submitted successfully!'),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                
-                // Remove uploaded videos
-                setState(() {
-                  _selectedFiles = [];
-                });
+                await _submissionProvider.startUpload();
+
+                if (mounted){
+                  // Show success message
+                  final snackbar = SnackBar(
+                    content: const Text('Videos submitted successfully!'),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                }
+                _submissionProvider.clearFiles();
+
               } catch (e) {
                 if (mounted) {
                   _showErrorDialog(e.toString());
                 }
               } finally {
-                setState(() {
-                  _isUploading = false;
-                });
+                _submissionProvider.setUploading(false);
               }
               
             },
 
-      child: _isUploading 
-          ? Row(
+      child: _submissionProvider.isUploading 
+          ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
+                Padding(
+                  padding: EdgeInsets.only(top: 12.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text('Uploading...'),
+                    ],
                   ),
                 ),
-                SizedBox(width: 8),
-                Text('Uploading...'),
+                
+                // Control buttons
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Pause button
+                    TextButton.icon(
+                      onPressed: () {
+                        _submissionProvider.pauseUpload();
+                      },
+                      icon: Icon(
+                        _submissionProvider.isPaused ? Icons.play_arrow : Icons.pause,
+                        color: Colors.white, 
+                        size: 16
+                      ),
+                      label: Text(
+                        _submissionProvider.isPaused ? 'Resume' : 'Pause', 
+                        style: TextStyle(color: Colors.white, fontSize: 12)
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size(60, 24),
+                      ),
+                    ),
+                    
+                    // Cancel button
+                    TextButton.icon(
+                      onPressed: () {
+                        _submissionProvider.cancelUpload();
+                      },
+                      icon: Icon(
+                        Icons.cancel, 
+                        color: Colors.white, 
+                        size: 16
+                      ),
+                      label: Text(
+                        'Cancel', 
+                        style: TextStyle(color: Colors.white, fontSize: 12)
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size(60, 24),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             )
           : const Text('Submit Videos'),
     );
-  }
-
-  Future<String?> _getUploadUrl(String fileName, int fileLength) async {
-    try {
-      final response = await _apiService.dio.post(
-        '/api/uploads',
-        options: Options(
-          headers: {
-            'file_name': fileName,
-            'file_length': fileLength.toString(),
-            'journalist': _user.name,
-          },
-        ),
-      );
-    
-      if (response.statusCode == 201) {
-        return response.headers.map['location']?.first;
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: '${response.statusCode} - ${response.data}'
-        );
-      }
-    } on DioException catch (e) {
-      throw Exception('Error connecting to server: ${e.message}');
-    }
-  }
-
-  Future<void> _uploadToTus() async {
-    final tempDir = await getTemporaryDirectory();
-    
-    List<Future> uploads = [];
-    
-    for (int i = 0; i < _selectedFiles.length; i++) {
-      CustomFile uploadFile = _selectedFiles[i];
-
-      // Get the address where we will upload the file
-      String? uri = '';
-      try {
-        uri = await _getUploadUrl(uploadFile.name, uploadFile.size);
-        uri = uri?.replaceAll("localhost", "10.0.2.2"); // TODO: Fix this for production
-      } catch (e) {
-        throw Exception('Error getting upload URL: $e');
-      }
-
-      // Create a temporary directory for this file
-      final tempDirectory = Directory('${tempDir.path}/${uploadFile.file.name}_upload');
-      if (!tempDirectory.existsSync()) {
-        tempDirectory.createSync(recursive: true);
-      }
-      
-      // TODO: Should use Dio to make it easier, but it isn't using bc the tusc package doesn't accept it
-      final tusClient = TusClient(
-        url: uri!, 
-        file: uploadFile.file,
-        chunkSize: 1.MB,
-        timeout: Duration(seconds: 30),
-        cache: TusPersistentCache(tempDirectory.path),
-        httpClient: httpClient,
-        headers: {
-          'Authorization': 'Bearer ${_user.tokens.getAccessToken()}',
-        }
-      );
-
-      // Since the way the package works it always sends a POST first and our server doesn't support that, 
-      // we need set the upload URL in the cache before calling startUpload so that the package thinks it's resuming an upload,
-      // therefore it will send a PATCH request instead of a POST
-      await tusClient.cache?.set(tusClient.fingerprint, uri);
-
-      uploads.add(tusClient.startUpload(
-        onProgress: (count, total, response) {
-          setState(() {
-            uploadFile.progress = count / total * 100;
-          });
-        },
-
-        onComplete: (response) {
-          setState(() {
-            uploadFile.progress = 100;
-          });
-          tempDirectory.deleteSync(recursive: true);
-        },
-
-        onError: (error) {
-          throw Exception('Error uploading ${uploadFile.file.name}: $error');
-        },
-
-        onTimeout: () {
-          throw Exception('Timeout uploading ${uploadFile.file.name}');
-        }
-      ));
-
-    }
-    
-    // Wait for all uploads to complete
-    await Future.wait(uploads);
   }
 
   void _showErrorDialog(String message) {
@@ -281,14 +247,11 @@ class _SubmissionPageState extends State<SubmissionPage> {
               child: Text('OK'),
             ),
           ],
-          backgroundColor: themeManager.theme.backgroundColor,
           titleTextStyle: TextStyle(
-            color: themeManager.theme.textColor,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
           contentTextStyle: TextStyle(
-            color: themeManager.theme.textColor,
             fontSize: 16,
           ),
         );
@@ -296,11 +259,23 @@ class _SubmissionPageState extends State<SubmissionPage> {
     );
   }
 
-  @override
-  void dispose() {
-    // Close the client when the page is disposed
-    //httpClient.close();
-    super.dispose();
+  Future<Map<String, dynamic>> _extractVideoMetadata(String filePath) async {
+    final videoInfo = FlutterVideoInfo();
+    final info = await videoInfo.getVideoInfo(filePath);
+
+    if (info == null) {
+      throw Exception('Failed to extract video metadata');
+    }
+
+    return {
+      'duration': (info.duration ?? 0) / 1000, // ms to seconds
+      'width': info.width ?? 0,
+      'height': info.height ?? 0,
+      'date': info.date ?? "",
+      'orientation': info.orientation ?? "",
+      'framerate': info.framerate ?? 0,
+      'location ': info.location  ?? "",
+    };
   }
 }
 

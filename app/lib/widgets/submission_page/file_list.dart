@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:app/data/custom_file.dart';
-import 'package:app/manager/theme_manager.dart';
 import 'package:app/widgets/submission_page/upload_progress.dart';
 
 class FileList extends StatelessWidget {
@@ -26,9 +25,23 @@ class FileList extends StatelessWidget {
           children: [
             ListTile(
               title: Text('File ${index + 1}'),
-              subtitle: Text(
-                '${file.name} - ${file.size} bytes',
-                style: TextStyle(color: themeManager.theme.textColor),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${file.name} - ${file.size} bytes',
+                    ),
+                  if (file.width != 0 && file.height != 0 && file.duration != 0) ...[
+                    Text(
+                      'Resolution: ${file.width}x${file.height}',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    Text(
+                      'Duration: ${_formatDuration(file.duration)}',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ],
               ),
               leading: file.thumbnail,
               trailing: isUploading 
@@ -44,5 +57,14 @@ class FileList extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _formatDuration(dynamic durationInSeconds) {
+    if (durationInSeconds == null) return 'Unknown';
+    final duration = Duration(seconds: durationInSeconds.toInt());
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return '${duration.inHours > 0 ? '${twoDigits(duration.inHours)}:' : ''}$minutes:$seconds';
   }
 }

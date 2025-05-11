@@ -1,6 +1,6 @@
 use crate::controller::api::auth::{extract_jwt_controller, generate_tokens, logout_user, refresh_token};
 use crate::model::api::jwt::Claims;
-use crate::model::api::Role::Role;
+use crate::model::api::role::Role;
 use crate::utils::Singleton;
 use actix_web::{web, Error, HttpMessage, HttpRequest, HttpResponse};
 use serde::Deserialize;

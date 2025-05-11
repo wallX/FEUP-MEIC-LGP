@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:app/data/custom_file.dart';
-import 'package:app/manager/theme_manager.dart';
 
 class UploadProgress extends StatelessWidget {
   final CustomFile file;
@@ -24,11 +23,9 @@ class UploadProgress extends StatelessWidget {
             children: [
               Text(
                 '${file.progress.toStringAsFixed(1)}%', 
-                style: TextStyle(color: themeManager.theme.textColor),
               ),
               Text(
                 'Est: ${_printDuration(file.estimate)}',
-                style: TextStyle(color: themeManager.theme.textColor),
               ),
             ],
           )

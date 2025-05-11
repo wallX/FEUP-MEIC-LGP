@@ -1,6 +1,8 @@
 services:
   app:
     build: .
+    ports:
+      - "8080:8080"
     networks:
       - tusd-network
     depends_on:
@@ -67,6 +69,45 @@ services:
     ports:
       - "6379:6379"
     restart: always
+  transcription-worker:
+    build:
+      context: ./workers/transcription_worker
+      dockerfile: transcription_worker.Dockerfile
+    depends_on:
+      - redis
+    networks:
+      - tusd-network
+    volumes:
+      - ./uploads:/app/uploads
+      - ./workers/transcription_worker:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+  caption-worker:
+    build:
+      context: ./workers/caption_worker
+      dockerfile: caption_worker.Dockerfile
+    depends_on:
+      - redis
+    networks:
+      - tusd-network
+    volumes:
+      - ./uploads:/app/uploads
+      - ./workers/caption_worker:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+  description-worker:
+    build:
+      context: ./workers/description_worker
+      dockerfile: description_worker.Dockerfile
+    depends_on:
+      - redis
+    networks:
+      - tusd-network
+    volumes:
+      - ./uploads:/app/uploads
+      - ./workers/description_worker:/app
+    environment:
+      - PYTHONUNBUFFERED=1
 networks:
   tusd-network:
     driver: bridge

@@ -1,7 +1,7 @@
 use crate::interface::api::auth::LoginRequest;
 use crate::model::api::jwt::{decode_expired_jwt, generate_jwt, validate_jwt, Claims};
 use crate::model::api::user::User;
-use crate::model::api::Role::Role;
+use crate::model::api::role::Role;
 use crate::utils::password_util::{hash_password, verify_password};
 use crate::utils::Singleton;
 use chrono::{Duration, Utc};
