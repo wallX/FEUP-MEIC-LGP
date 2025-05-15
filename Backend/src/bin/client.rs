@@ -6,19 +6,24 @@ use std::path::Path;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
+    let args: Vec<String> = std::env::args().collect();
+    let file_path = args.get(1).map(|s| s.as_str()).unwrap_or("video.mp4");
+    let token = args.get(2).map(|s| s.as_str()).unwrap_or("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmNTY0Y2M3YS05YjUyLTQxYWUtYTUyYy0wNGIzOWQ4MjYyN2MiLCJleHAiOjE3NDY3MTM3MzQsInJvbGVzIjpbIkFkbWluIiwiVXNlciIsIk1vZGVyYXRvciJdfQ.axD3Tc27TgcC2krO-76Fs-iMvLq56n3QIF-_lw1rico");
 
-    // Step 1: Initiate the upload
-    let file_path = "docker-compose.yaml";
+    println!("File path: {}", file_path);
+    println!("Token: {}", token);
+
     let file_size = std::fs::metadata(file_path)?.len();
     let file_name = Path::new(file_path).file_name().unwrap().to_str().unwrap();
-
     println!("File size: {}", file_size);
+
 
     let response = client
         .post("http://localhost/api/uploads")
         //.post("http://localhost:8080/uploads")
         .header("file_name", file_name)
         .header("file_length", file_size.to_string())
+        .header("Authorization", &format!("Bearer {}", token))
         .send()
         .await?;
 
@@ -26,7 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let upload_url = response
         .headers()
         .get("Location")
-       .ok_or("No Location header found")?
+        .ok_or("No Location header found")?
         .to_str()?;
 
     println!("Upload URL: {}", upload_url);
@@ -52,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .header("Content-Type", "application/offset+octet-stream")
             .header("Upload-Offset", offset.to_string())
             .header("Tus-Resumable", "1.0.0")
-            .header("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzZjQxZjA0Yi02NTBlLTQ4ZWUtOThmNi04NTA1ZmVlM2RmNWUiLCJleHAiOjE3NDM2ODk4MjcsInJvbGVzIjpbIkFkbWluIl19.ENcVEaCAVi5pCoKkW1wXzvBoKFuem49jqgIe0xr1nto")
+            .header("Authorization", &format!("Bearer {}", token))
             .body(chunk.to_vec())
             .send()
             .await?;
@@ -67,4 +72,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Upload complete!");
     Ok(())
-}
+}                                                                                                                   

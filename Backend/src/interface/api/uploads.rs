@@ -6,7 +6,7 @@ use serde_json::Value;
 use std::sync::Arc;
 use crate::interface::api::auth::check_role;
 use crate::model::api::jwt::Claims;
-use crate::model::api::Role::Role;
+use crate::model::api::role::Role;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -21,7 +21,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 async fn initiate_upload(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
     
     
-    match check_role(&req, Role::Admin, singleton.clone()) {
+    match check_role(&req, Role::User, singleton.clone()) {
         Err(err) => return err,
         _ => {}
     }
