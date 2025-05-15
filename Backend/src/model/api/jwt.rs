@@ -1,8 +1,8 @@
+use crate::model::api::role::Role;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::model::api::role::Role;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
