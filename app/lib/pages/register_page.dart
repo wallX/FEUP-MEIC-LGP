@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:app/services/api_service.dart';
+import 'package:app/services/token_service.dart';
+import 'package:app/widgets/error_dialog.dart';
+import 'package:app/widgets/success_dialog.dart';
 import '../data/user.dart';
 import 'package:provider/provider.dart';
 import '../provider/user_provider.dart';
@@ -16,35 +20,57 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  UserType _selectedUserType = UserType.user;
-  final TextEditingController _stationsController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  // UserType _selectedUserType = UserType.user;
+  // final TextEditingController _stationsController = TextEditingController();
+
+  bool _isLoading = false;
 
   void _register() async {
     if (_formKey.currentState!.validate()) {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
+      setState(() {
+        _isLoading = true;
+      });
 
-      // TODO: Connect to backend and register user // Check if the email is already registered // get the access token
+      try{
+        final ApiService apiService = ApiService(_tokenService);
 
-       await _tokenService.saveTokens(
-        accessToken: 'placeholder_access_token',
-        refreshToken: 'placeholder_refresh_token'
-      );
+        final response = await apiService.dio.post(
+          '/api/auth/register',
+          data: {
+            'email': _emailController.text,
+            'name': _nameController.text,
+            'password': _passwordController.text,
+          },
+        );
 
-      final user = User(
-        name: _nameController.text,
-        email: _emailController.text,
-        userType: _selectedUserType,
-        tokens: _tokenService,
-        stations: _stationsController.text.isNotEmpty
-            ? _stationsController.text.split(',')
-            : null,
-      );
+        debugPrint('Register response: ${response.data}');
 
-      userProvider.setUser(user);
-      debugPrint('User Registered: ${user.name}, ${user.email}, ${user.userType}, ${user.stations}');
-
-      if (!mounted) return;
-      Navigator.pop(context); // Go back to the previous screen
+        if (response.statusCode == 200){
+          if (!mounted) return;
+          SuccessDialog.show(
+            context: context,
+            message: 'Registration successful. You may log in now.',
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog
+              Navigator.pop(context); // Go back to the previous screen
+            },
+          );
+        } else {
+          if (!mounted) return;
+          ErrorDialog.show(context: context, message: 'Register failed. Please try again.');
+        }
+      } catch (e) {
+        debugPrint('Register failed: $e');
+        if (!mounted) return;
+        ErrorDialog.show(context: context, message: 'Register failed. Please try again.');
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+        _passwordController.clear();
+      }
     }
   }
 
@@ -66,10 +92,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 16),
                 _buildEmailField(),
                 const SizedBox(height: 16),
-                _buildUserTypeDropdown(),
+                _buildPasswordField(),
                 const SizedBox(height: 16),
-                _buildStationsField(),
-                const SizedBox(height: 32),
+                // _buildUserTypeDropdown(),
+                // const SizedBox(height: 16),
+                // _buildStationsField(),
+                // const SizedBox(height: 32),
                 _buildRegisterButton(),
               ],
             ),
@@ -108,33 +136,47 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildUserTypeDropdown() {
-    return DropdownButtonFormField<UserType>(
-      value: _selectedUserType,
-      decoration: const InputDecoration(labelText: 'User Type'),
-      items: UserType.values.map((UserType type) {
-        return DropdownMenuItem<UserType>(
-          value: type,
-          child: Text(type.toString().split('.').last),
-        );
-      }).toList(),
-      onChanged: (UserType? newValue) {
-        setState(() {
-          _selectedUserType = newValue!;
-        });
+  Widget _buildPasswordField() {
+    return TextFormField(
+      controller: _passwordController,
+      decoration: const InputDecoration(labelText: 'Password'),
+      obscureText: true,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your password';
+        }
+        return null;
       },
     );
   }
 
+  // Widget _buildUserTypeDropdown() {
+  //   return DropdownButtonFormField<UserType>(
+  //     value: _selectedUserType,
+  //     decoration: const InputDecoration(labelText: 'User Type'),
+  //     items: UserType.values.map((UserType type) {
+  //       return DropdownMenuItem<UserType>(
+  //         value: type,
+  //         child: Text(type.toString().split('.').last),
+  //       );
+  //     }).toList(),
+  //     onChanged: (UserType? newValue) {
+  //       setState(() {
+  //         _selectedUserType = newValue!;
+  //       });
+  //     },
+  //   );
+  // }
+
   // TODO: Temporary
-  Widget _buildStationsField() {
-    return TextFormField(
-      controller: _stationsController,
-      decoration: const InputDecoration(
-        labelText: 'Stations (comma-separated)',
-      ),
-    );
-  }
+  // Widget _buildStationsField() {
+  //   return TextFormField(
+  //     controller: _stationsController,
+  //     decoration: const InputDecoration(
+  //       labelText: 'Stations (comma-separated)',
+  //     ),
+  //   );
+  // }
 
   Widget _buildRegisterButton() {
     return Center(

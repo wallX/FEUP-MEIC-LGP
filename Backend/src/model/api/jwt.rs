@@ -18,6 +18,7 @@ pub fn generate_jwt(user_id: Uuid, roles: Vec<Role>, secret: &str, exp: i64) -> 
         .timestamp() as usize;
 
     let claims = Claims { sub: user_id, exp: expiration, roles };
+    // let claims = Claims { sub: user_id, exp: expiration };
 
     jsonwebtoken::encode(
         &Header::default(),

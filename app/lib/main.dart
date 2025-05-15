@@ -4,6 +4,7 @@ import 'package:app/provider/user_provider.dart';
 import 'package:app/provider/submission_provider.dart';
 import 'package:app/provider/theme_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:app/pages/submission_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +30,11 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Kwik Report',
           theme: themeProvider.getThemeData(),
+          initialRoute: '/',
           home: const MainPage(),
+          routes: {
+            '/submission_page': (context) => const SubmissionPage(),
+          },
         );
       },
     );

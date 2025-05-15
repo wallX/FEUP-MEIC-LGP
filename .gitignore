@@ -6,3 +6,5 @@
 /Backend/uploads/
 /Backend/models/
 /Backend/grafana/data/
+.vscode/
+/Backend/grafana/data/

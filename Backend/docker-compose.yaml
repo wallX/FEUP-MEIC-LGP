@@ -1,16 +1,47 @@
 services:
   app:
     build: .
-    ports:
-      - "8080:8080"
     networks:
       - tusd-network
+      - db-network
     depends_on:
       - tusd
+      - db
     volumes:
       - .:/app  # Mount the current directory for development
     environment:
       - RUST_LOG=info  # Example environment variable for Rust logging
+  db:
+    image: postgres:alpine
+    restart: unless-stopped
+    shm_size: 128mb
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 16Ozl6Q33pIf
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d
+    networks:
+      - db-network
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@kwik.com
+      PGADMIN_DEFAULT_PASSWORD: rIW8MZ50x6z3
+    ports:
+      - 5000:80
+    volumes:
+      - pgadmindata:/var/lib/pgadmin
+    networks:
+      - db-network
   tusd:
     image: tusproject/tusd
     volumes:
@@ -69,47 +100,14 @@ services:
     ports:
       - "6379:6379"
     restart: always
-  transcription-worker:
-    build:
-      context: ./workers/transcription_worker
-      dockerfile: transcription_worker.Dockerfile
-    depends_on:
-      - redis
-    networks:
-      - tusd-network
-    volumes:
-      - ./uploads:/app/uploads
-      - ./workers/transcription_worker:/app
-    environment:
-      - PYTHONUNBUFFERED=1
-  caption-worker:
-    build:
-      context: ./workers/caption_worker
-      dockerfile: caption_worker.Dockerfile
-    depends_on:
-      - redis
-    networks:
-      - tusd-network
-    volumes:
-      - ./uploads:/app/uploads
-      - ./workers/caption_worker:/app
-    environment:
-      - PYTHONUNBUFFERED=1
-  description-worker:
-    build:
-      context: ./workers/description_worker
-      dockerfile: description_worker.Dockerfile
-    depends_on:
-      - redis
-    networks:
-      - tusd-network
-    volumes:
-      - ./uploads:/app/uploads
-      - ./workers/description_worker:/app
-    environment:
-      - PYTHONUNBUFFERED=1
+
 networks:
   tusd-network:
     driver: bridge
   mon-net:
     driver: bridge
+  db-network:
+
+volumes:
+  pgdata:
+  pgadmindata:

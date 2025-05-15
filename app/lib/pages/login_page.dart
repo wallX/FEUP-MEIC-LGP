@@ -42,8 +42,8 @@ class _LoginPageState extends State<LoginPage> {
               refreshToken: "456",
             );
           final user = User(
-              name: "PLACEHOLDER", //response.data['name'],
-              email: _emailController.text,
+              name: "LGP", //response.data['name'],
+              email: "${_emailController.text}@mail.com",
               userType: UserType.journalist, //response.data['user_type'],
               tokens: _tokenService,
               stations: null, //response.data['stations'],
@@ -75,11 +75,10 @@ class _LoginPageState extends State<LoginPage> {
             refreshToken: response.data['refresh'],
           );
 
-          // TODO when data is added to the backend
           final user = User(
-            name: "PLACEHOLDER", //response.data['name'],
-            email: _emailController.text,
-            userType: UserType.journalist, //response.data['user_type'],
+            name: response.data['user']['name'],
+            email: response.data['user']['email'],
+            userType: null, //response.data['user']['roles'],
             tokens: _tokenService,
             stations: null, //response.data['stations'],
           );
@@ -122,15 +121,15 @@ class _LoginPageState extends State<LoginPage> {
             buildWelcomeText(),
         
             _buildLoginForm(),
-            _buildForgotPassword(),
-            const SizedBox(height: 8.0),
+            // _buildForgotPassword(),
+            const SizedBox(height: 16.0),
             _buildLoginButton(),
             const SizedBox(height: 8.0),
             _registerButton(),
-            const SizedBox(height: 2.0),
-            buildSeparatorLine(),
-            const SizedBox(height: 8.0),
-            _buildContinueWith(),
+            // const SizedBox(height: 2.0),
+            // buildSeparatorLine(),
+            // const SizedBox(height: 8.0),
+            // _buildContinueWith(),
         
         
           ],
