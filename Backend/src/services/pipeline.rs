@@ -29,6 +29,14 @@ async fn description_video(file_name: &str, singleton: Arc<Singleton>) {
     singleton.redis().send_to_work_queue("description_queue", file_name).await.expect("OH NO: panic message");
 }
 
+async fn assess_video_quality(file_name: &str, singleton: Arc<Singleton>) {
+    println!("Assessing video quality: {}", file_name);
+    singleton.redis().send_to_work_queue("quality_queue", file_name)
+        .await
+        .expect("OH NO: failed to enqueue quality analysis");
+}
+
+
 fn store_results(file_name: &str, arc: Arc<Singleton>) {
     println!("Storing results for  {}", file_name);
     // Add storage logic here
@@ -48,6 +56,7 @@ pub async fn process_file(file_name: String, singleton: Arc<Singleton>) {
     transcribe_video(&file_name,singleton.clone()).await;
     caption_video_frames(&file_name,singleton.clone()).await;
     description_video(&file_name,singleton.clone()).await;
+    assess_video_quality(&file_name, singleton.clone()).await;
 
     singleton.redis().listen_for_completion(&file_name).await.expect("TODO: panic message");
     println!("Processing complete for: {}", file_name);

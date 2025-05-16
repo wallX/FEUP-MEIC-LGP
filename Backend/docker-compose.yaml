@@ -135,6 +135,19 @@ services:
       - ./workers/description_worker:/app
     environment:
       - PYTHONUNBUFFERED=1
+  quality-worker:
+    build:
+      context: ./workers/video_quality_worker   # Path to your quality worker folder
+      dockerfile: video_quality_worker.Dockerfile                    # Dockerfile for the quality worker
+    depends_on:
+      - redis
+    networks:
+      - tusd-network
+    volumes:
+      - ./uploads:/app/uploads
+      - ./workers/video_quality_worker:/app
+    environment:
+      - PYTHONUNBUFFERED=1
 networks:
   tusd-network:
     driver: bridge
