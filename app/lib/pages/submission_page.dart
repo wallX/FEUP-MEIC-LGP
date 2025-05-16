@@ -90,10 +90,10 @@ class _SubmissionPageState extends State<SubmissionPage> {
     return _submissionProvider.isUploading ? 
       const SizedBox.shrink() :
       FloatingActionButton(
-      onPressed: _submissionProvider.isUploading ? null : _selectVideoFromGallery,
-      tooltip: 'Select video from gallery',
-      child: const Icon(Icons.video_library),
-    );
+        onPressed: _submissionProvider.isUploading ? null : _selectVideoFromGallery,
+        tooltip: 'Select video from gallery',
+        child: const Icon(Icons.video_library),
+      );
   } 
 
   Future<void> _selectVideoFromGallery() async {

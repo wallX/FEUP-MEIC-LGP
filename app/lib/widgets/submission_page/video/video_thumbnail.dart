@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:app/widgets/submission_page/video/video_player_page.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:io';
 
 class VideoThumbnail extends StatefulWidget {
   const VideoThumbnail({super.key, required this.videoPath});
@@ -17,10 +18,11 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoPath))
-      ..initialize().then((_) {
-        setState(() {});
-      });
+    _controller = VideoPlayerController.file(
+      File(widget.videoPath),
+    )..initialize().then((_) {
+      setState(() {});
+    });
   }
 
   @override
