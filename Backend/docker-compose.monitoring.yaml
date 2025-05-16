@@ -49,6 +49,19 @@ services:
       - /var/lib/dbus/machine-id:/var/lib/dbus/machine-id:ro
     networks:
       - mon-net
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres-exporter
+    restart: unless-stopped
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:16Ozl6Q33pIf@db:5432/postgres?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      - db
+    networks:
+      - mon-net
+      - db-network
 networks:
   mon-net:
     driver: bridge
