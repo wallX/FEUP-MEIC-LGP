@@ -10,7 +10,7 @@ class User{
   final String name;
   final String email;
   final UserType? userType;
-  final TokenService tokens;
+  TokenService tokens;
   final List<String>? stations;
   
   User({
@@ -20,4 +20,34 @@ class User{
     required this.tokens,
     this.stations,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'email': email,
+      'userType': userType?.toString(),
+      'stations': stations,
+    };
+  }
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      name: json['name'],
+      email: json['email'],
+      userType: _parseUserType(json['userType']),
+      tokens: TokenService(),
+      stations: List<String>.from(json['stations'] ?? []),
+    );
+  }
+
+  static UserType? _parseUserType(String? userTypeStr) {
+    if (userTypeStr == null) return null;
+    if (userTypeStr.contains('journalist')) return UserType.journalist;
+    if (userTypeStr.contains('user')) return UserType.user;
+    return null;
+  }
+
+  void setToken(TokenService token) {
+    tokens = token;
+  }
 }

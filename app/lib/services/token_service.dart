@@ -5,29 +5,43 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class TokenService {
-  final FlutterSecureStorage _storage;
+  String? accessToken;
+  String? refreshToken;
+  final storage = const FlutterSecureStorage();
   
-  TokenService(): _storage = const FlutterSecureStorage();
+  TokenService({this.accessToken, this.refreshToken});
 
   Future<String?> getAccessToken() async {
-    return await _storage.read(key: 'access_token');
+    return await storage.read(key: 'access_token');
   }
 
   Future<String?> getRefreshToken() async {
-    return await _storage.read(key: 'refresh_token');
+    return await storage.read(key: 'refresh_token');
   }
 
-  Future<void> saveTokens({
-    required String accessToken,
-    required String refreshToken,
-  }) async {
-    await _storage.write(key: 'access_token', value: accessToken);
-    await _storage.write(key: 'refresh_token', value: refreshToken);
+  Future<void> saveTokens() async {
+    if (accessToken != null) {
+      await storage.write(key: 'access_token', value: accessToken);
+    }
+    if (refreshToken != null) {
+      await storage.write(key: 'refresh_token', value: refreshToken);
+    }
+  }
+
+  void setTokens({String? accessToken, String? refreshToken}) {
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+    saveTokens();
+  }
+
+  Future<void> loadTokens() async {
+    accessToken = await storage.read(key: 'access_token');
+    refreshToken = await storage.read(key: 'refresh_token');
   }
 
   Future<void> clearTokens() async {
-    await _storage.delete(key: 'access_token');
-    await _storage.delete(key: 'refresh_token');
+    await storage.delete(key: 'access_token');
+    await storage.delete(key: 'refresh_token');
   }
 
   Future<bool> refreshTokens() async {
@@ -52,7 +66,7 @@ class TokenService {
       );
 
       if (response.statusCode == 200){
-        await saveTokens(
+        setTokens(
           accessToken: response.data['token'],
           refreshToken: response.data['refresh'],
         );
@@ -88,9 +102,9 @@ class TokenService {
         final stringData = response.body;
         final Map<String, dynamic> jsonData = jsonDecode(stringData);
         
-        await saveTokens(
+        setTokens(
           accessToken: jsonData['token'],
-          refreshToken: jsonData['refresh'], 
+          refreshToken: jsonData['refresh'],
         );
       }
       return true;

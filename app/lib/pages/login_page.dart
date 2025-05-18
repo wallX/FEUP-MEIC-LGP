@@ -37,10 +37,10 @@ class _LoginPageState extends State<LoginPage> {
 
         // TODO: TEMPORARY BYPASS
         if(_emailController.text == "lgp"){
-          await _tokenService.saveTokens(
-              accessToken: "123",
-              refreshToken: "456",
-            );
+          _tokenService.setTokens(
+            accessToken: "123",
+            refreshToken: "456",
+          );
           final user = User(
               name: "LGP", //response.data['name'],
               email: "${_emailController.text}@mail.com",
@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
         if (response.statusCode == 200){
 
           debugPrint('Login successful: ${response.data['token']}');
-          await _tokenService.saveTokens(
+          _tokenService.setTokens(
             accessToken: response.data['token'],
             refreshToken: response.data['refresh'],
           );
