@@ -13,7 +13,7 @@ class UserProvider extends ChangeNotifier {
 
   Future<void> initUser() async {
     await _loadUserFromPreferences();
-    
+
     if (_user != null) {
       await _tokenService.loadTokens();
       if (_tokenService.accessToken != null && _tokenService.refreshToken != null) {
@@ -65,7 +65,9 @@ class UserProvider extends ChangeNotifier {
   }
 
   void logout() {
+    _tokenService.clearTokens();
     _user = null;
+    _saveUserToPreferences(null);
     notifyListeners();
   }
 }
