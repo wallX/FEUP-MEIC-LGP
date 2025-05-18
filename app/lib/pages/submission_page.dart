@@ -2,7 +2,6 @@ import 'package:app/widgets/error_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'package:app/widgets/submission_page/video/video_thumbnail.dart';
 import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:app/data/custom_file.dart';
 import 'package:app/widgets/submission_page/file_list.dart';
@@ -10,7 +9,6 @@ import 'package:app/services/api_service.dart';
 import 'package:app/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:app/data/user.dart';
-import 'package:flutter_video_info/flutter_video_info.dart';
 import 'dart:async';
 import 'package:app/provider/submission_provider.dart';
 import 'package:app/services/upload_service.dart';
@@ -92,6 +90,8 @@ class _SubmissionPageState extends State<SubmissionPage> {
       FloatingActionButton(
         onPressed: _submissionProvider.isUploading ? null : _selectVideoFromGallery,
         tooltip: 'Select video from gallery',
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.video_library),
       );
   } 

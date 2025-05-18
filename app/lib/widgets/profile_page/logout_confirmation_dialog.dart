@@ -29,7 +29,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        userProvider.logout();
+        userProvider.logout(context);
         navigator.pop();
       } else {
         if (!context.mounted) return;
@@ -42,6 +42,14 @@ class LogoutConfirmationDialog extends StatelessWidget {
       }
     } catch (e) {
       if (!context.mounted) return;
+
+      // TODO: Bypass
+      if (user.name == "LGP") {
+        userProvider.logout(context);
+        navigator.pop();
+        return;
+      }
+
       ErrorDialog.show(
         context: context,
         message: 'An error occurred while logging out. Please try again.',

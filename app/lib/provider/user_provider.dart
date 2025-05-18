@@ -1,5 +1,7 @@
+import 'package:app/provider/submission_provider.dart';
 import 'package:app/services/token_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../data/user.dart';
@@ -64,10 +66,15 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void logout() {
+
+  void logout(context) {
     _tokenService.clearTokens();
     _user = null;
     _saveUserToPreferences(null);
+
+    final submissionProvider = Provider.of<SubmissionProvider>(context, listen: false);
+    submissionProvider.clearFiles();
+
     notifyListeners();
   }
 }

@@ -93,6 +93,9 @@ class SubmissionProvider extends ChangeNotifier {
 
       clearFiles();
       setUploading(false);
+    } else {
+      clearFiles();
+      setUploading(false);
     }
   }
 
