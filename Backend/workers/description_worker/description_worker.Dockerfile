@@ -13,6 +13,7 @@ RUN pip install requests --no-cache-dir
 
 RUN pip install redis --no-cache-dir
 
+RUN pip install google-generativeai --no-cache-dir
 # Set working directory
 WORKDIR /app
 
