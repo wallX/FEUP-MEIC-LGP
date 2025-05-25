@@ -107,10 +107,12 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
+          "exemplar": false,
           "expr": "nginx_up",
           "format": "time_series",
-          "instant": false,
+          "instant": true,
           "intervalFactor": 1,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -220,7 +222,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "((time() - container_last_seen{name=\"backend-app-1\"}) > 5 or absent(container_last_seen{name=\"backend-app-1\"}))or on() vector(0)",
+          "expr": "((time() - container_last_seen{name=\"backend-app-1\"}) > 5.6 or absent(container_last_seen{name=\"backend-app-1\"}))or on() vector(0)",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -335,7 +337,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "((time() - container_last_seen{name=\"backend-tusd-1\"}) > 5 or absent(container_last_seen{name=\"backend-tusd-1\"}))or on() vector(0)",
+          "expr": "((time() - container_last_seen{name=\"backend-tusd-1\"}) > 5.6 or absent(container_last_seen{name=\"backend-tusd-1\"}))or on() vector(0)",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -448,7 +450,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "((time() - container_last_seen{name=\"redis\"}) > 5 or absent(container_last_seen{name=\"redis\"}))or on() vector(0)",
+          "expr": "((time() - container_last_seen{name=\"redis\"}) > 5.6 or absent(container_last_seen{name=\"redis\"}))or on() vector(0)",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -561,7 +563,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "((time() - container_last_seen{name=\"db\"}) > 5 or absent(container_last_seen{name=\"db\"}))or on() vector(0)",
+          "expr": "((time() - container_last_seen{name=\"db\"}) > 5.6 or absent(container_last_seen{name=\"db\"}))or on() vector(0)",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -674,7 +676,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "((time() - container_last_seen{name=\"backend-llamacpp-server-1\"}) > 5 or absent(container_last_seen{name=\"backend-llamacpp-server-1\"}))or on() vector(0)",
+          "expr": "((time() - container_last_seen{name=\"backend-llamacpp-server-1\"}) > 5.6 or absent(container_last_seen{name=\"backend-llamacpp-server-1\"}))or on() vector(0)",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -763,10 +765,14 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "count(container_last_seen{image!=\"\"})",
-          "intervalFactor": 2,
+          "instant": true,
+          "intervalFactor": 1,
           "legendFormat": "",
           "metric": "container_last_seen",
+          "range": false,
           "refId": "A",
           "step": 240
         }
@@ -841,10 +847,14 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "sum(container_memory_usage_bytes{image!=\"\"})/1024/1024",
-          "intervalFactor": 2,
+          "instant": true,
+          "intervalFactor": 1,
           "legendFormat": "",
           "metric": "container_memory_usage_bytes",
+          "range": false,
           "refId": "A",
           "step": 240
         }
@@ -920,11 +930,13 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
+          "exemplar": false,
           "expr": "sum(rate(container_cpu_user_seconds_total{image!=\"\"}[$__interval]) * 100)",
-          "intervalFactor": 2,
+          "instant": true,
+          "intervalFactor": 1,
           "legendFormat": "",
           "metric": "container_memory_usage_bytes",
-          "range": true,
+          "range": false,
           "refId": "A",
           "step": 240
         }
@@ -2035,5 +2047,5 @@
   "timezone": "browser",
   "title": "GRS",
   "uid": "b3cc5279-5928-4f7c-ace8-3c7072683a20",
-  "version": 40
+  "version": 50
 }
