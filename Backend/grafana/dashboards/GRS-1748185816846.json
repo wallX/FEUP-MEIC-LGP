@@ -219,9 +219,13 @@
       "targets": [
         {
           "editorMode": "code",
+          "exemplar": false,
           "expr": "((time() - container_last_seen{name=\"backend-app-1\"}) > 5 or absent(container_last_seen{name=\"backend-app-1\"}))or on() vector(0)",
-          "legendFormat": "__auto",
-          "range": true,
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{label_name}}",
+          "range": false,
           "refId": "A"
         }
       ],
@@ -330,9 +334,11 @@
       "targets": [
         {
           "editorMode": "code",
+          "exemplar": false,
           "expr": "((time() - container_last_seen{name=\"backend-tusd-1\"}) > 5 or absent(container_last_seen{name=\"backend-tusd-1\"}))or on() vector(0)",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -441,9 +447,11 @@
       "targets": [
         {
           "editorMode": "code",
+          "exemplar": false,
           "expr": "((time() - container_last_seen{name=\"redis\"}) > 5 or absent(container_last_seen{name=\"redis\"}))or on() vector(0)",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -552,9 +560,11 @@
       "targets": [
         {
           "editorMode": "code",
+          "exemplar": false,
           "expr": "((time() - container_last_seen{name=\"db\"}) > 5 or absent(container_last_seen{name=\"db\"}))or on() vector(0)",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -663,9 +673,11 @@
       "targets": [
         {
           "editorMode": "code",
+          "exemplar": false,
           "expr": "((time() - container_last_seen{name=\"backend-llamacpp-server-1\"}) > 5 or absent(container_last_seen{name=\"backend-llamacpp-server-1\"}))or on() vector(0)",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -2016,12 +2028,12 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "GRS",
   "uid": "b3cc5279-5928-4f7c-ace8-3c7072683a20",
-  "version": 33
+  "version": 40
 }
