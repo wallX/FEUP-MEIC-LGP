@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:app/provider/user_provider.dart';
 import 'package:app/provider/theme_provider.dart';
-import 'package:app/utils/profile_image_utils.dart';
-import 'package:app/widgets/profile_page/image_options_dialog.dart';
 
 class ProfileHeader extends StatelessWidget {
   final File? profileImage;

@@ -103,38 +103,38 @@ class SubmissionProvider extends ChangeNotifier {
     return _uploadService != null && _uploadService!.isPaused;
   }
 
-  Future<CustomFile> createCustomFileWithFile(File file) async {
-    final metadata = await _extractVideoMetadata(file.path);
+  String _cleanFileName(String fileName) {
+    final Map<String, String> accentMap = {
+      'á': 'a', 'à': 'a', 'â': 'a', 'ä': 'a', 'ã': 'a', 'å': 'a',
+      'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+      'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+      'ó': 'o', 'ò': 'o', 'ô': 'o', 'ö': 'o', 'õ': 'o',
+      'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+      'ý': 'y', 'ÿ': 'y',
+      'ç': 'c', 'ñ': 'n',
+      'Á': 'A', 'À': 'A', 'Â': 'A', 'Ä': 'A', 'Ã': 'A', 'Å': 'A',
+      'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
+      'Í': 'I', 'Ì': 'I', 'Î': 'I', 'Ï': 'I',
+      'Ó': 'O', 'Ò': 'O', 'Ô': 'O', 'Ö': 'O', 'Õ': 'O',
+      'Ú': 'U', 'Ù': 'U', 'Û': 'U', 'Ü': 'U',
+      'Ý': 'Y',
+      'Ç': 'C', 'Ñ': 'N',
+    };
+    String normalizedName = fileName;
+    accentMap.forEach((key, value) {
+      normalizedName = normalizedName.replaceAll(key, value);
+    });
 
-    return CustomFile(
-      name: file.path.split('/').last,
-      size: file.lengthSync(),
-      file: XFile(file.path),
-      thumbnail: VideoThumbnail(
-        key: ValueKey(file.path),
-        videoPath: file.path,
-      ),
-      progress: 0,
-      estimate: Duration.zero,
-      duration: metadata['duration'],
-      width: metadata['width'],
-      height: metadata['height'],
-      orientation: metadata['orientation'],
-      date: metadata['date'],
-      framerate: metadata['framerate'],
-      location: metadata['location'] ?? "",
-    );
+    return normalizedName;
   }
 
-  Future<CustomFile> createCustomFile(XFile xfile) async {
-    final file = File(xfile.path);
-
+  Future<CustomFile> createCustomFile(File file) async {
     final metadata = await _extractVideoMetadata(file.path);
 
     return CustomFile(
-      name: file.path.split('/').last,
+      name: _cleanFileName(file.path.split('/').last),
       size: file.lengthSync(),
-      file: xfile,
+      file: XFile(file.path),
       thumbnail: VideoThumbnail(
         key: ValueKey(file.path),
         videoPath: file.path,

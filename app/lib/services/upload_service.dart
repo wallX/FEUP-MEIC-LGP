@@ -51,6 +51,9 @@ class UploadService {
             'duration': uploadFile.duration,
             'width': uploadFile.width,
             'height': uploadFile.height,
+            'notes':uploadFile.notes ?? '',
+            'location': uploadFile.location,
+            'date': uploadFile.date,
           },
         ),
       );

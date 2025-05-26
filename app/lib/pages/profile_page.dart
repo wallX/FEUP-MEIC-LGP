@@ -6,7 +6,6 @@ import 'package:app/provider/user_provider.dart';
 import 'package:app/widgets/change_theme_button.dart';
 import 'package:app/widgets/profile_page/profile_header.dart';
 import 'package:app/widgets/profile_page/logout_confirmation_dialog.dart';
-import 'package:app/widgets/profile_page/delete_account_dialog.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

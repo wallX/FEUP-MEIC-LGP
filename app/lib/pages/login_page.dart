@@ -228,7 +228,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // TODO: Implement forgot password functionality
-  Widget _buildForgotPassword(){
+  /*Widget _buildForgotPassword(){
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
       child: Align(
@@ -246,7 +246,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-  }
+  }*/
 
   Widget _buildLoginButton(){
     return _isLoading
@@ -294,7 +294,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildContinueWith(){
+  /*Widget _buildContinueWith(){
     return Column(
       children: [
         Text(
@@ -314,5 +314,5 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ],
     );
-  }
+  }*/
 }
