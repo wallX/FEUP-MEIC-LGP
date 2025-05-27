@@ -76,7 +76,7 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
+        "w": 3,
         "x": 0,
         "y": 1
       },
@@ -195,8 +195,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 4,
+        "w": 3,
+        "x": 3,
         "y": 1
       },
       "id": 17,
@@ -310,8 +310,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 8,
+        "w": 3,
+        "x": 6,
         "y": 1
       },
       "id": 18,
@@ -423,8 +423,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 12,
+        "w": 3,
+        "x": 9,
         "y": 1
       },
       "id": 19,
@@ -536,8 +536,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 16,
+        "w": 3,
+        "x": 12,
         "y": 1
       },
       "id": 20,
@@ -649,8 +649,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 20,
+        "w": 3,
+        "x": 15,
         "y": 1
       },
       "id": 21,
@@ -676,14 +676,240 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "((time() - container_last_seen{name=\"backend-llamacpp-server-1\"}) > 5.6 or absent(container_last_seen{name=\"backend-llamacpp-server-1\"}))or on() vector(0)",
+          "expr": "((time() - container_last_seen{name=\"backend-caption-worker-1\"}) > 5.6 or absent(container_last_seen{name=\"backend-caption-worker-1\"}))or on() vector(0)",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "llamacpp",
+      "title": "Caption Worker",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "ON"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "from": 2,
+                "result": {
+                  "color": "red",
+                  "index": 1
+                }
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 1,
+                "result": {
+                  "color": "red",
+                  "index": 2,
+                  "text": "OFF"
+                }
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "{__name__=\"container_last_seen\", container_label_com_docker_compose_config_hash=\"0c1164de2db59d9c8964e73382037d07ba4d61f0230547eab88d5abdda749701\", container_label_com_docker_compose_container_number=\"1\", container_label_com_docker_compose_depends_on=\"tusd:service_started:false,db:service_started:false\", container_label_com_docker_compose_image=\"sha256:c43ba1e73e057d4b2e5a2538ae9a03200a4a21f95ce79729fa2a6f99f643e467\", container_label_com_docker_compose_oneoff=\"False\", container_label_com_docker_compose_project=\"backend\", container_label_com_docker_compose_project_config_files=\"/home/alex/Sem2/LGP-16/Backend/docker-compose.yaml,/home/alex/Sem2/LGP-16/Backend/docker-compose.monitoring.yaml\", container_label_com_docker_compose_project_working_dir=\"/home/alex/Sem2/LGP-16/Backend\", container_label_com_docker_compose_service=\"app\", container_label_com_docker_compose_version=\"2.35.1\", container_label_org_opencontainers_image_source=\"https://github.com/rust-lang/docker-rust\", id=\"/system.slice/docker-993443b586db74e8e7816ae7799aee3b56be33f93e1a48deb60eaf123841a56d.scope\", image=\"backend-app\", instance=\"cadvisor:8080\", job=\"cadvisor\", name=\"backend-app-1\"}"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": []
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 18,
+        "y": 1
+      },
+      "id": 26,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "((time() - container_last_seen{name=\"backend-quality-worker-1\"}) > 5.6 or absent(container_last_seen{name=\"backend-quality-worker-1\"}))or on() vector(0)",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Quality Worker",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "ON"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "from": 2,
+                "result": {
+                  "color": "red",
+                  "index": 1
+                }
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 1,
+                "result": {
+                  "color": "red",
+                  "index": 2,
+                  "text": "OFF"
+                }
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "{__name__=\"container_last_seen\", container_label_com_docker_compose_config_hash=\"0c1164de2db59d9c8964e73382037d07ba4d61f0230547eab88d5abdda749701\", container_label_com_docker_compose_container_number=\"1\", container_label_com_docker_compose_depends_on=\"tusd:service_started:false,db:service_started:false\", container_label_com_docker_compose_image=\"sha256:c43ba1e73e057d4b2e5a2538ae9a03200a4a21f95ce79729fa2a6f99f643e467\", container_label_com_docker_compose_oneoff=\"False\", container_label_com_docker_compose_project=\"backend\", container_label_com_docker_compose_project_config_files=\"/home/alex/Sem2/LGP-16/Backend/docker-compose.yaml,/home/alex/Sem2/LGP-16/Backend/docker-compose.monitoring.yaml\", container_label_com_docker_compose_project_working_dir=\"/home/alex/Sem2/LGP-16/Backend\", container_label_com_docker_compose_service=\"app\", container_label_com_docker_compose_version=\"2.35.1\", container_label_org_opencontainers_image_source=\"https://github.com/rust-lang/docker-rust\", id=\"/system.slice/docker-993443b586db74e8e7816ae7799aee3b56be33f93e1a48deb60eaf123841a56d.scope\", image=\"backend-app\", instance=\"cadvisor:8080\", job=\"cadvisor\", name=\"backend-app-1\"}"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": []
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 21,
+        "y": 1
+      },
+      "id": 27,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "((time() - container_last_seen{name=\"backend-transcription-worker-1\"}) > 5.6 or absent(container_last_seen{name=\"backend-transcription-worker-1\"}))or on() vector(0)",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Transcription Worker",
       "type": "stat"
     },
     {
@@ -1148,6 +1374,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
+          "exemplar": false,
           "expr": "sum(rate(container_memory_usage_bytes{name=~\".+\"}[$__interval])) by (name)",
           "instant": false,
           "legendFormat": "__auto",
@@ -2047,5 +2274,5 @@
   "timezone": "browser",
   "title": "GRS",
   "uid": "b3cc5279-5928-4f7c-ace8-3c7072683a20",
-  "version": 50
+  "version": 54
 }
