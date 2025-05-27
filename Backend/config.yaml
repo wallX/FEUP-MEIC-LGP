@@ -3,7 +3,6 @@ tusd:
   internal_name: "tusd" #inside docker network
   #internal_name: "localhost" #inside docker network
   internal_port: "1080"
-  ##### IMPORTANT ##### Change this to your server's external IP or domain name
   external_name: "localhost" #outside connection hostname
   external_port:
   external_endpoint: "upload"

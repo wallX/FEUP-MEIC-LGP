@@ -21,7 +21,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 async fn initiate_upload(req: HttpRequest, singleton: web::Data<Arc<Singleton>>) -> HttpResponse {
     
     
-    match check_role(&req, Role::Admin, singleton.clone()) {
+    match check_role(&req, Role::User, singleton.clone()) {
         Err(err) => return err,
         _ => {}
     }

@@ -8,11 +8,12 @@ import 'package:app/pages/submission_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()..initUser()),
         ChangeNotifierProvider(create: (_) => SubmissionProvider()),
       ],
       child: const MyApp(),

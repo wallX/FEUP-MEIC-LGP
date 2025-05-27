@@ -1,3 +1,7 @@
+import 'package:app/data/user.dart';
+import 'package:app/services/api_service.dart';
+import 'package:app/widgets/error_dialog.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:app/provider/user_provider.dart';
@@ -8,9 +12,54 @@ class LogoutConfirmationDialog extends StatelessWidget {
 
   Future<void> _handleLogout(BuildContext context) async {
     final navigator = Navigator.of(context);
+    
     final userProvider = context.read<UserProvider>();
-    userProvider.logout();
-    navigator.pop();
+    User user = userProvider.user!;
+    final apiService = ApiService(user.tokens);
+
+    try {
+      final response = await apiService.dio.post(
+        '/api/auth/logout',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${user.tokens.accessToken}',
+            'Refresh-Token': '${user.tokens.refreshToken}',
+            },
+        )
+      );
+
+      if (response.statusCode == 200) {
+        userProvider.logout(context);
+        navigator.pop();
+      } else {
+        if (!context.mounted) return;
+        ErrorDialog.show(
+          context: context,
+          message: 'Failed to log out. Please try again.',
+          title: 'Logout Error',
+          buttonText: 'OK',
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+
+      // TODO: Bypass
+      if (user.name == "LGP") {
+        userProvider.logout(context);
+        navigator.pop();
+        return;
+      }
+
+      ErrorDialog.show(
+        context: context,
+        message: 'An error occurred while logging out. Please try again.',
+        title: 'Logout Error',
+        buttonText: 'OK',
+      );
+    }
+ 
+    
+    
   }
 
   @override

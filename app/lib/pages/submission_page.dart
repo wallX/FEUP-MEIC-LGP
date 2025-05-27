@@ -2,7 +2,6 @@ import 'package:app/widgets/error_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'package:app/widgets/submission_page/video/video_thumbnail.dart';
 import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:app/data/custom_file.dart';
 import 'package:app/widgets/submission_page/file_list.dart';
@@ -10,7 +9,6 @@ import 'package:app/services/api_service.dart';
 import 'package:app/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:app/data/user.dart';
-import 'package:flutter_video_info/flutter_video_info.dart';
 import 'dart:async';
 import 'package:app/provider/submission_provider.dart';
 import 'package:app/services/upload_service.dart';
@@ -58,31 +56,37 @@ class _SubmissionPageState extends State<SubmissionPage> {
     return Scaffold(
       appBar: AppBar(),
       body: Container(
-        child: _submissionProvider.isEmpty()
-            ? Center( // Empty
-                child: Text('No video selected'),
-              )
-      
-            : Column(
-                children: [
-                  Expanded(
-                    child: FileList(
-                      files: _submissionProvider.selectedFiles,
-                      isUploading: _submissionProvider.isUploading,
-                      onRemove: _submissionProvider.isUploading ? null : (index) {
-                        _submissionProvider.removeFile(index);
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: _submitButton(),
-                  ),
-                ],
-              ),
+        child: _submissionProvider.isEmpty() ? 
+          _buildEmptyUploadsBody() :
+          _buildUploadsBody(),
       ),
     );
   }
+
+  Column _buildUploadsBody() {
+    return Column(
+      children: [
+        Expanded(
+          child: FileList(
+            files: _submissionProvider.selectedFiles,
+            isUploading: _submissionProvider.isUploading,
+            onRemove: _submissionProvider.isUploading ? null : (index) {
+              _submissionProvider.removeFile(index);
+            },
+          ),
+        ),
+        _submitButton(),
+      ],
+    );
+  }
+
+  Center _buildEmptyUploadsBody() {
+    return Center( // Empty
+      child: Text('No video selected', style: TextStyle(fontSize: 18, color: Colors.black)
+      ),
+    );
+  }
+  
 
 
   // Widget to select a video from the gallery
@@ -90,10 +94,12 @@ class _SubmissionPageState extends State<SubmissionPage> {
     return _submissionProvider.isUploading ? 
       const SizedBox.shrink() :
       FloatingActionButton(
-      onPressed: _submissionProvider.isUploading ? null : _selectVideoFromGallery,
-      tooltip: 'Select video from gallery',
-      child: const Icon(Icons.video_library),
-    );
+        onPressed: _submissionProvider.isUploading ? null : _selectVideoFromGallery,
+        tooltip: 'Select video from gallery',
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.video_library),
+      );
   } 
 
   Future<void> _selectVideoFromGallery() async {
@@ -107,7 +113,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
       List<CustomFile> customFiles = _submissionProvider.selectedFiles;
 
       for (File file in files) {
-        customFiles.add(await _submissionProvider.createCustomFileWithFile(file));
+        customFiles.add(await _submissionProvider.createCustomFile(file));
       }
 
       _submissionProvider.setFiles(customFiles);
@@ -115,110 +121,113 @@ class _SubmissionPageState extends State<SubmissionPage> {
   }
 
   Widget _submitButton() {
-    return ElevatedButton(
-
-      onPressed: _submissionProvider.isUploading 
-          ? null 
-          : () async {
-              _submissionProvider.setUploading(true);
-
-              try {
-                await _submissionProvider.startUpload();
-
-                if (mounted){
-                  // Show success message
-                  final snackbar = SnackBar(
-                    content: const Text('Videos submitted successfully!'),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+      
+        onPressed: _submissionProvider.isUploading 
+            ? null 
+            : () async {
+                _submissionProvider.setUploading(true);
+      
+                try {
+                  await _submissionProvider.startUpload();
+      
+                  if (mounted){
+                    // Show success message
+                    final snackbar = SnackBar(
+                      content: const Text('Videos submitted successfully!'),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                  }
+                  _submissionProvider.clearFiles();
+      
+                } catch (e) {
+                  if (mounted) {
+                    ErrorDialog.show(
+                      context: context,
+                      title: 'Upload Error',
+                      message: e.toString(),
+                    );
+                  }
+                } finally {
+                  _submissionProvider.setUploading(false);
                 }
-                _submissionProvider.clearFiles();
-
-              } catch (e) {
-                if (mounted) {
-                  ErrorDialog.show(
-                    context: context,
-                    title: 'Upload Error',
-                    message: e.toString(),
-                  );
-                }
-              } finally {
-                _submissionProvider.setUploading(false);
-              }
-              
-            },
-
-      child: _submissionProvider.isUploading 
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(top: 12.0),
-                  child: Row(
+                
+              },
+      
+        child: _submissionProvider.isUploading 
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: 12.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Text('Uploading...'),
+                      ],
+                    ),
+                  ),
+                  
+                  // Control buttons
+                  Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+                      // Pause button
+                      TextButton.icon(
+                        onPressed: () {
+                          _submissionProvider.pauseUpload();
+                        },
+                        icon: Icon(
+                          _submissionProvider.isPaused ? Icons.play_arrow : Icons.pause,
+                          color: Colors.white, 
+                          size: 16
+                        ),
+                        label: Text(
+                          _submissionProvider.isPaused ? 'Resume' : 'Pause', 
+                          style: TextStyle(color: Colors.white, fontSize: 12)
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: Size(60, 24),
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Text('Uploading...'),
+                      
+                      // Cancel button
+                      TextButton.icon(
+                        onPressed: () {
+                          _submissionProvider.cancelUpload();
+                        },
+                        icon: Icon(
+                          Icons.cancel, 
+                          color: Colors.white, 
+                          size: 16
+                        ),
+                        label: Text(
+                          'Cancel', 
+                          style: TextStyle(color: Colors.white, fontSize: 12)
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: Size(60, 24),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-                
-                // Control buttons
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Pause button
-                    TextButton.icon(
-                      onPressed: () {
-                        _submissionProvider.pauseUpload();
-                      },
-                      icon: Icon(
-                        _submissionProvider.isPaused ? Icons.play_arrow : Icons.pause,
-                        color: Colors.white, 
-                        size: 16
-                      ),
-                      label: Text(
-                        _submissionProvider.isPaused ? 'Resume' : 'Pause', 
-                        style: TextStyle(color: Colors.white, fontSize: 12)
-                      ),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        minimumSize: Size(60, 24),
-                      ),
-                    ),
-                    
-                    // Cancel button
-                    TextButton.icon(
-                      onPressed: () {
-                        _submissionProvider.cancelUpload();
-                      },
-                      icon: Icon(
-                        Icons.cancel, 
-                        color: Colors.white, 
-                        size: 16
-                      ),
-                      label: Text(
-                        'Cancel', 
-                        style: TextStyle(color: Colors.white, fontSize: 12)
-                      ),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        minimumSize: Size(60, 24),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            )
-          : const Text('Submit Videos'),
+                ],
+              )
+            : const Text('Submit Videos'),
+      ),
     );
   }
 }

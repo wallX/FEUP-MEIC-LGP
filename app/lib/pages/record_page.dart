@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:app/widgets/error_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -46,7 +48,8 @@ class _RecordPageState extends State<RecordPage> {
               event.captureRequest.when(
                 single: (single) async {
                   if (single.file == null) return;
-                  CustomFile customFile = await _submissionProvider.createCustomFile(single.file!);
+                  File file = File(single.file!.path);
+                  CustomFile customFile = await _submissionProvider.createCustomFile(file);
                   _submissionProvider.addFile(customFile);
 
                   if(mounted){

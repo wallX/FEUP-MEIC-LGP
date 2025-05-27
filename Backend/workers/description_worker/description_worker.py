@@ -3,6 +3,13 @@ import os
 import time
 import json
 import requests
+import google.generativeai as genai
+
+# Set your API key
+genai.configure(api_key="AIzaSyCfpC6cZa_WTZBYxeJECwxjIPmaG1dyNro")
+
+# Choose the Gemini Pro model
+model = genai.GenerativeModel("gemini-2.0-flash")
 
 # Redis connection
 r = redis.Redis(host='redis', port=6379, db=0)
@@ -64,7 +71,9 @@ def process_job(file_name):
         transcription = load_json(transcription_path)["transcription"]
         captions = load_json(captions_path)["captions"]
         prompt = format_prompt(transcription, captions)
-        summary = query_llamacpp(prompt)
+        #summary = query_llamacpp(prompt)
+        response = model.generate_content(prompt)
+        summary = response.text.strip()
         save_summary(file_name, summary)
         r.decr(f"pending:{file_name}")
     except Exception as e:
