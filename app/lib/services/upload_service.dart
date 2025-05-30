@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:app/data/app_constants.dart';
 import 'package:app/data/custom_file.dart';
 import 'package:app/data/user.dart';
 import 'package:app/services/api_service.dart';
@@ -28,7 +29,7 @@ class UploadService {
       String? uri = '';
       try {
         uri = await _getUploadUrl(uploadFile);
-        uri = uri?.replaceAll("localhost", "10.0.2.2"); // TODO: Fix this for production
+        uri = uri?.replaceAll("localhost", AppConstants.apiBaseUrl); // TODO: Fix this for production
       } catch (e) {
         throw Exception('Error getting upload URL: $e');
       }
