@@ -168,7 +168,7 @@ class _RegisterPageState extends State<RegisterPage> {
   //   );
   // }
 
-  // TODO: Temporary
+  // 
   // Widget _buildStationsField() {
   //   return TextFormField(
   //     controller: _stationsController,

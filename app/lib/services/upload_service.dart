@@ -4,6 +4,7 @@ import 'package:app/data/app_constants.dart';
 import 'package:app/data/custom_file.dart';
 import 'package:app/data/user.dart';
 import 'package:app/services/api_service.dart';
+import 'package:flutter/widgets.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tusc/tusc.dart';
 import 'package:http/http.dart' as http;
@@ -29,7 +30,7 @@ class UploadService {
       String? uri = '';
       try {
         uri = await _getUploadUrl(uploadFile);
-        uri = uri?.replaceAll("localhost", AppConstants.apiBaseUrl); // TODO: Fix this for production
+        uri = uri?.replaceAll("http://localhost", AppConstants.apiBaseUrl);
       } catch (e) {
         throw Exception('Error getting upload URL: $e');
       }

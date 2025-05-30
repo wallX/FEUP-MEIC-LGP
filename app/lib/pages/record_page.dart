@@ -79,7 +79,6 @@ class _RecordPageState extends State<RecordPage> {
                     );
                   }
                 },
-                // TODO: When does this happen even? Docs says it's front camera, but when I tried it used single
                 multiple: (multiple) {
                   multiple.fileBySensor.forEach((key, value) {
                     debugPrint('DEBUG | multiple video taken: $key ${value?.path}');

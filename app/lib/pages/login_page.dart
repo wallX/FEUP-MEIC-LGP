@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../provider/user_provider.dart';
 import 'package:app/pages/register_page.dart';
 import 'package:app/widgets/logo.dart';
+import 'package:flutter/foundation.dart';	
 
 class LoginPage extends StatefulWidget{
   const LoginPage({super.key});
@@ -35,8 +36,8 @@ class _LoginPageState extends State<LoginPage> {
 
       try{
 
-        // TODO: TEMPORARY BYPASS
-        if(_emailController.text == "lgp"){
+        // Debug bypass
+        if(_emailController.text == "lgp" && kDebugMode){
           _tokenService.setTokens(
             accessToken: "123",
             refreshToken: "456",
