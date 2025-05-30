@@ -16,7 +16,7 @@ r = redis.Redis(host='redis', port=6379, db=0)
 
 UPLOAD_DIR = "/app/uploads"
 
-def wait_for_analysis_files(file_name, timeout=300, poll_interval=2):
+def wait_for_analysis_files(file_name, timeout=1500, poll_interval=2):
     folder = os.path.join(UPLOAD_DIR, f"{file_name}_analysis")
     transcription_path = os.path.join(folder, f"{file_name}_transcription.json")
     captions_path = os.path.join(folder, f"{file_name}_captions.json")
