@@ -3,6 +3,8 @@ import 'package:app/data/custom_file.dart';
 import 'package:app/widgets/submission_page/upload_progress.dart';
 import 'package:intl/intl.dart';
 
+/// This widget displays the list of files that have been selected for upload.
+/// It also is responsible for handling the buttons to add metadata to each file and remove files from the list.
 class FileList extends StatelessWidget {
   final List<CustomFile> files;
   final bool isUploading;
@@ -110,12 +112,13 @@ class FileList extends StatelessWidget {
         selectedDate = dateFormat.parse(file.date);
       }
     } catch (e) {
-      // If parsing fails, default to current date
       selectedDate = DateTime.now();
     }
 
     selectedDate ??= DateTime.now();
     final dateController = TextEditingController(text: dateFormat.format(selectedDate));
+
+    
 
     showDialog(
       context: context,
@@ -150,7 +153,7 @@ class FileList extends StatelessWidget {
 
   Widget _buildNotesField() {
     return TextField(
-      style: TextStyle(color: Colors.grey[700]), // Set input text to black
+      style: TextStyle(color: Colors.grey[700]),
       controller: notesController,
       maxLines: 3,
       decoration: const InputDecoration(
@@ -199,6 +202,16 @@ class FileList extends StatelessWidget {
               initialDate: selectedDate!,
               firstDate: DateTime(0),
               lastDate: DateTime.now(),
+              builder: (BuildContext context, Widget? child) {
+                return Theme(
+                  data: ThemeData.light().copyWith(
+                    primaryColor: Theme.of(context).primaryColor,
+                    colorScheme: ColorScheme.light(primary: Theme.of(context).primaryColor),
+                    buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+                  ),
+                  child: child!,
+                );
+              },
             );
             if (picked != null && picked != selectedDate) {
               setState(() {
