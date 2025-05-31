@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getVideoUrl } from '../utils/videoUtils';
+import { getVideoUrl, getQualityColor } from '../utils/videoUtils';
 import './NewsDisplay.css';
 
 // Simulated news articles
@@ -64,12 +64,15 @@ const NewsDisplay = () => {
 
             // If there are new videos, show the most recent one as breaking news
             if (newVideos.length > 0) {
-                const latestVideo = newVideos[0]; // Videos are already sorted by timestamp
+                const latestVideo = newVideos[0];
                 setBreakingNews({
                     title: "Nova Transmissão Recebida",
-                    description: `Novo vídeo adicionado: ${latestVideo.filename}`,
+                    description: latestVideo.description,
                     filename: latestVideo.filename,
-                    url: getVideoUrl(latestVideo.filename)
+                    directory: latestVideo.directory,
+                    quality: latestVideo.quality,
+                    transcription: latestVideo.transcription,
+                    url: getVideoUrl(latestVideo.directory, latestVideo.filename)
                 });
                 setShowBreaking(true);
             }
@@ -108,22 +111,40 @@ const NewsDisplay = () => {
                             <div className="breaking-title">
                                 <div className="breaking-badge">BREAKING NEWS</div>
                                 <h2>{breakingNews.title}</h2>
+                                {breakingNews.quality && (
+                                    <div 
+                                        className="quality-badge"
+                                        style={{ backgroundColor: getQualityColor(breakingNews.quality.category) }}
+                                    >
+                                        Qualidade: {breakingNews.quality.category} ({Math.round(breakingNews.quality.score * 100)}%)
+                                    </div>
+                                )}
                             </div>
                             <button onClick={() => setShowBreaking(false)}>×</button>
                         </div>
-                        <p className="breaking-description">{breakingNews.description}</p>
                         <video
                             controls
                             autoPlay
                             muted
                             src={breakingNews.url}
                         />
+                        {breakingNews.transcription && (
+                            <div className="breaking-transcription">
+                                <h3>Transcrição:</h3>
+                                <p>{breakingNews.transcription}</p>
+                            </div>
+                        )}
+                        {breakingNews.description && (
+                            <div className="breaking-description">
+                                <h3>Descrição:</h3>
+                                <p>{breakingNews.description}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
             
             <main className="regular-news">
-                {/* Videos Section */}
                 <section className="videos-section">
                     <h2>Vídeos Recentes</h2>
                     <div className="videos-grid">
@@ -131,20 +152,31 @@ const NewsDisplay = () => {
                             <div key={video.filename} className="video-card" onClick={() => {
                                 setBreakingNews({
                                     title: "Visualizando Transmissão",
-                                    description: `Reproduzindo: ${video.filename}`,
+                                    description: video.description,
                                     filename: video.filename,
-                                    url: getVideoUrl(video.filename)
+                                    directory: video.directory,
+                                    quality: video.quality,
+                                    transcription: video.transcription,
+                                    url: getVideoUrl(video.directory, video.filename)
                                 });
                                 setShowBreaking(true);
                             }}>
                                 <video
                                     muted
-                                    poster={`${getVideoUrl(video.filename)}#t=0.1`}
+                                    poster={`${getVideoUrl(video.directory, video.filename)}#t=0.1`}
                                 >
-                                    <source src={getVideoUrl(video.filename)} type="video/mp4" />
+                                    <source src={getVideoUrl(video.directory, video.filename)} type="video/mp4" />
                                 </video>
                                 <div className="video-info">
                                     <h3>{video.filename}</h3>
+                                    {video.quality && (
+                                        <div 
+                                            className="quality-badge"
+                                            style={{ backgroundColor: getQualityColor(video.quality.category) }}
+                                        >
+                                            {video.quality.category}
+                                        </div>
+                                    )}
                                     <span className="video-timestamp">{new Date(video.timestamp).toLocaleString()}</span>
                                 </div>
                             </div>

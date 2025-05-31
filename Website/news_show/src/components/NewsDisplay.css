@@ -133,6 +133,8 @@
     width: 90%;
     max-width: 1000px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .breaking-header {
@@ -317,4 +319,40 @@
     color: #666;
     font-size: 1.2rem;
     margin: 0;
+}
+
+.quality-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 8px 0;
+}
+
+.breaking-transcription,
+.breaking-description {
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+
+.breaking-transcription h3,
+.breaking-description h3 {
+    color: var(--text-color);
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.breaking-transcription p,
+.breaking-description p {
+    color: var(--text-color);
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.video-info .quality-badge {
+    margin: 4px 0;
+    font-size: 0.8rem;
 } 
