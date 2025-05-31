@@ -15,7 +15,6 @@ class AuthInterceptor extends Interceptor {
 
   AuthInterceptor(this._dio, this._tokenService);
 
-  // TODO: Check if DioException works as it was using DioError which was deprecated
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401 && !_isRefreshing) {

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:app/services/auth_interceptor.dart';
 import 'package:app/services/token_service.dart';
+import 'package:app/data/app_constants.dart';
 
 class ApiService {
   late final Dio _dio;
@@ -8,7 +9,7 @@ class ApiService {
 
   ApiService(this._tokenService) {
     _dio = Dio(BaseOptions(
-      baseUrl: 'http://10.0.2.2', // TODO: Replace with server URL when they provide it to us
+      baseUrl: AppConstants.apiBaseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       sendTimeout: const Duration(seconds: 120),

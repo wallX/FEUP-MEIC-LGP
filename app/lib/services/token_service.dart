@@ -1,3 +1,4 @@
+import 'package:app/data/app_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -48,7 +49,7 @@ class TokenService {
     try {
       Dio retryDio = Dio(
         BaseOptions(
-          baseUrl: "http://10.0.2.2",
+          baseUrl: AppConstants.apiBaseUrl,
         ),
       );
 
@@ -83,7 +84,7 @@ class TokenService {
     try {
       var httpClient = http.Client();
 
-      Uri uri = Uri.parse("http://10.0.2.2/api/auth/refresh");
+      Uri uri = Uri.parse("${AppConstants.apiBaseUrl}/api/auth/refresh");
 
       final token = await getAccessToken();
       final refreshToken = await getRefreshToken();

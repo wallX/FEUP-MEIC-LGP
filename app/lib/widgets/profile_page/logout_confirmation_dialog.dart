@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:app/provider/user_provider.dart';
 import 'package:app/widgets/profile_page/dialog_buttons.dart';
+import 'package:flutter/foundation.dart';
 
 class LogoutConfirmationDialog extends StatelessWidget {
   const LogoutConfirmationDialog({super.key});
@@ -43,8 +44,8 @@ class LogoutConfirmationDialog extends StatelessWidget {
     } catch (e) {
       if (!context.mounted) return;
 
-      // TODO: Bypass
-      if (user.name == "LGP") {
+      // Bypass for debugging purposes
+      if (user.name == "LGP" && kDebugMode) {
         userProvider.logout(context);
         navigator.pop();
         return;
