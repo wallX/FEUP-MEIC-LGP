@@ -69,10 +69,11 @@ const NewsDisplay = () => {
                     title: "Nova Transmissão Recebida",
                     description: latestVideo.description,
                     filename: latestVideo.filename,
+                    actualFilename: latestVideo.actualFilename,
                     directory: latestVideo.directory,
                     quality: latestVideo.quality,
                     transcription: latestVideo.transcription,
-                    url: getVideoUrl(latestVideo.directory, latestVideo.filename)
+                    url: getVideoUrl(null, latestVideo.filename, latestVideo.actualFilename)
                 });
                 setShowBreaking(true);
             }
@@ -154,18 +155,19 @@ const NewsDisplay = () => {
                                     title: "Visualizando Transmissão",
                                     description: video.description,
                                     filename: video.filename,
+                                    actualFilename: video.actualFilename,
                                     directory: video.directory,
                                     quality: video.quality,
                                     transcription: video.transcription,
-                                    url: getVideoUrl(video.directory, video.filename)
+                                    url: getVideoUrl(null, video.filename, video.actualFilename)
                                 });
                                 setShowBreaking(true);
                             }}>
                                 <video
                                     muted
-                                    poster={`${getVideoUrl(video.directory, video.filename)}#t=0.1`}
+                                    poster={`${getVideoUrl(null, video.filename, video.actualFilename)}#t=0.1`}
                                 >
-                                    <source src={getVideoUrl(video.directory, video.filename)} type="video/mp4" />
+                                    <source src={getVideoUrl(null, video.filename, video.actualFilename)} type="video/mp4" />
                                 </video>
                                 <div className="video-info">
                                     <h3>{video.filename}</h3>

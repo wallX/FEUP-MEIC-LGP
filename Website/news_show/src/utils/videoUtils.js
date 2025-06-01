@@ -1,5 +1,10 @@
 // Function to get video URL from the uploads directory
-export const getVideoUrl = (directory, filename) => {
+export const getVideoUrl = (directory, filename, actualFilename) => {
+    // For video files, use the actual filename directly from uploads
+    if (!directory) {
+        return `http://localhost:3001/uploads/${actualFilename}`;
+    }
+    // For other files (like JSONs), use the analysis directory
     return `http://localhost:3001/uploads/${directory}/${filename}`;
 };
 

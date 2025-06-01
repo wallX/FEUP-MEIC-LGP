@@ -25,43 +25,59 @@ const readJsonFile = (filePath) => {
     }
 };
 
+// Function to find video file with or without extension
+const findVideoFile = (baseName, directory) => {
+    const possibleExtensions = ['.mp4', '.webm', '.mov', '.avi', ''];
+    for (const ext of possibleExtensions) {
+        const fileName = baseName + ext;
+        const filePath = path.join(directory, fileName);
+        if (fs.existsSync(filePath)) {
+            return {
+                actualName: fileName,
+                displayName: baseName + '.mp4'
+            };
+        }
+    }
+    return null;
+};
+
 // Endpoint to list videos with their metadata
 app.get('/api/videos', (req, res) => {
     try {
-        const directories = fs.readdirSync(UPLOADS_DIR)
+        // Get all items in the uploads directory
+        const items = fs.readdirSync(UPLOADS_DIR);
+        
+        // Filter for analysis directories and process them
+        const videos = items
             .filter(item => {
                 const itemPath = path.join(UPLOADS_DIR, item);
                 return fs.statSync(itemPath).isDirectory() && item.endsWith('_analysis');
-            });
+            })
+            .map(dir => {
+                const dirPath = path.join(UPLOADS_DIR, dir);
+                const baseFileName = dir.replace('_analysis', '');
+                
+                // Find the video file
+                const videoFile = findVideoFile(baseFileName, UPLOADS_DIR);
+                if (!videoFile) return null;
 
-        const videos = directories.map(dir => {
-            const dirPath = path.join(UPLOADS_DIR, dir);
-            const baseFileName = dir.replace('_analysis', '');
-            const files = fs.readdirSync(UPLOADS_DIR);
+                // Read metadata files from the analysis directory
+                const qualityData = readJsonFile(path.join(dirPath, `${baseFileName}_quality.json`));
+                const transcriptionData = readJsonFile(path.join(dirPath, `${baseFileName}_transcription.json`));
+                const descriptionData = readJsonFile(path.join(dirPath, `${baseFileName}_description.json`));
 
-            // Find the video file
-            const videoFileName = `${baseFileName}.mp4`;
-            const videoPath = path.join(UPLOADS_DIR, videoFileName);
-
-            if (!fs.existsSync(videoPath)) {
-                return null;
-            }
-
-            // Read metadata files
-            const qualityData = readJsonFile(path.join(dirPath, `${baseFileName}_quality.json`));
-            const transcriptionData = readJsonFile(path.join(dirPath, `${baseFileName}_transcription.json`));
-            const descriptionData = readJsonFile(path.join(dirPath, `${baseFileName}_description.json`));
-
-            return {
-                filename: videoFileName,
-                directory: dir,
-                timestamp: fs.statSync(videoPath).mtime.toISOString(),
-                quality: qualityData,
-                transcription: transcriptionData?.transcription || '',
-                description: descriptionData?.summary || '',
-            };
-        }).filter(video => video !== null)
-          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                return {
+                    filename: videoFile.displayName,
+                    actualFilename: videoFile.actualName,
+                    directory: dir,
+                    timestamp: fs.statSync(path.join(UPLOADS_DIR, videoFile.actualName)).mtime.toISOString(),
+                    quality: qualityData,
+                    transcription: transcriptionData?.transcription || '',
+                    description: descriptionData?.summary || '',
+                };
+            })
+            .filter(video => video !== null)
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         
         res.json(videos);
     } catch (error) {
@@ -70,13 +86,28 @@ app.get('/api/videos', (req, res) => {
     }
 });
 
-// Serve files from analysis directories
-app.use('/uploads', (req, res, next) => {
-    const filePath = req.path;
-    if (filePath.includes('_analysis/')) {
-        express.static(UPLOADS_DIR)(req, res, next);
+// Serve video files directly from the uploads directory
+app.get('/uploads/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(UPLOADS_DIR, filename);
+    
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        res.sendFile(filePath);
     } else {
-        res.status(404).send('Not found');
+        res.status(404).send('File not found');
+    }
+});
+
+// Serve files from analysis directories
+app.get('/uploads/:analysisDir/:filename', (req, res) => {
+    const { analysisDir, filename } = req.params;
+    const dirPath = path.join(UPLOADS_DIR, analysisDir);
+    const filePath = path.join(dirPath, filename);
+    
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('File not found');
     }
 });
 
