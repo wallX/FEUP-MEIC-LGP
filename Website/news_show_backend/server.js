@@ -37,11 +37,15 @@ app.get('/api/videos', (req, res) => {
         const videos = directories.map(dir => {
             const dirPath = path.join(UPLOADS_DIR, dir);
             const baseFileName = dir.replace('_analysis', '');
-            const files = fs.readdirSync(dirPath);
+            const files = fs.readdirSync(UPLOADS_DIR);
 
             // Find the video file
-            const videoFile = files.find(file => file.endsWith('.mp4'));
-            if (!videoFile) return null;
+            const videoFileName = `${baseFileName}.mp4`;
+            const videoPath = path.join(UPLOADS_DIR, videoFileName);
+
+            if (!fs.existsSync(videoPath)) {
+                return null;
+            }
 
             // Read metadata files
             const qualityData = readJsonFile(path.join(dirPath, `${baseFileName}_quality.json`));
@@ -49,9 +53,9 @@ app.get('/api/videos', (req, res) => {
             const descriptionData = readJsonFile(path.join(dirPath, `${baseFileName}_description.json`));
 
             return {
-                filename: videoFile,
+                filename: videoFileName,
                 directory: dir,
-                timestamp: fs.statSync(path.join(dirPath, videoFile)).mtime.toISOString(),
+                timestamp: fs.statSync(videoPath).mtime.toISOString(),
                 quality: qualityData,
                 transcription: transcriptionData?.transcription || '',
                 description: descriptionData?.summary || '',
