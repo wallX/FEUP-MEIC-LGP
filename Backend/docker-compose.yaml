@@ -125,10 +125,12 @@ services:
       - ./workers/description_worker:/app
     environment:
       - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
   quality-worker:
     build:
-      context: ./workers/video_quality_worker   # Path to your quality worker folder
-      dockerfile: video_quality_worker.Dockerfile                    # Dockerfile for the quality worker
+      context: ./workers/video_quality_worker
+      dockerfile: video_quality_worker.Dockerfile
     depends_on:
       - redis
     networks:

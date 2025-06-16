@@ -5,10 +5,10 @@ import json
 import requests
 import google.generativeai as genai
 
-# Set your API key
-genai.configure(api_key="AIzaSyCfpC6cZa_WTZBYxeJECwxjIPmaG1dyNro")
+API_KEY = os.getenv("GEMINI_KEY")
 
-# Choose the Gemini Pro model
+genai.configure(api_key=API_KEY)
+
 model = genai.GenerativeModel("gemini-2.0-flash")
 
 # Redis connection
