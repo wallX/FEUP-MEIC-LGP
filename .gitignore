@@ -7,3 +7,4 @@
 /Backend/models/
 .vscode/
 /Backend/grafana/data/
+/Backend/.env
