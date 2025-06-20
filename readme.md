@@ -36,7 +36,7 @@ The key for the Gemini API is needed by the worker that generates descriptions a
 
 ### Maintenance/Evolution
 
-```src/``` contains Rust source code that runs on the ```app``` service.
+```src/``` contains Rust source code that runs on the ```app``` service &mdash; the one that sets up the backend's HTTP API.
 
 ```db/``` contains the initialization script for the user accounts PostgreSQL database.
 
